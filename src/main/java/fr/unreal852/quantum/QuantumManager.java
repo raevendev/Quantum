@@ -21,7 +21,7 @@ public final class QuantumManager
 
     public static QuantumWorld getWorld(Identifier identifier)
     {
-        return (QuantumWorld) WORLDS.get(identifier);
+        return WORLDS.get(identifier);
     }
 
     public static QuantumWorld getWorld(String worldName)
@@ -44,26 +44,6 @@ public final class QuantumManager
 
         return world;
     }
-
-//    public static PortalLink createPortal(MinecraftServer server, QuantumWorldPortalConfig portalConfig, boolean saveToDisk) {
-//        class_1792 item = (class_1792)class_2378.field_11142.method_10223(portalConfig.getPortalIgniteItemId());
-//        CustomPortalBuilder portalBuilder = CustomPortalBuilder.beginPortal().destDimID(portalConfig.getDestinationId()).frameBlock(portalConfig.getPortalBlockId()).tintColor(portalConfig.getPortalColor());
-//        if (item == class_1802.field_8705) {
-//            portalBuilder.lightWithWater();
-//        } else if (item == class_1802.field_8187) {
-//            portalBuilder.lightWithFluid(class_3612.field_15908);
-//        } else if (item != class_1802.field_8884) {
-//            portalBuilder.lightWithItem(item);
-//        }
-//
-//        PortalLink portalLink = portalBuilder.registerPortal();
-//        PortalRegistrySync.syncLinkToAllPlayers(portalLink, server);
-//        if (saveToDisk) {
-//            FilesUtils.writeObjectToJsonFile((Path)PORTAL_FOLDER.resolve(UUID.randomUUID() + ".json"), portalConfig);
-//        }
-//
-//        return portalLink;
-//    }
 
     public static void loadExistingWorlds(MinecraftServer server)
     {
@@ -99,12 +79,33 @@ public final class QuantumManager
                     }
                 }
             }
-        } catch (Exception var7)
+        }
+        catch (Exception var7)
         {
             Quantum.LOGGER.error(var7.getMessage());
         }
 
     }
+
+//    public static PortalLink createPortal(MinecraftServer server, QuantumWorldPortalConfig portalConfig, boolean saveToDisk) {
+//        class_1792 item = (class_1792)class_2378.field_11142.method_10223(portalConfig.getPortalIgniteItemId());
+//        CustomPortalBuilder portalBuilder = CustomPortalBuilder.beginPortal().destDimID(portalConfig.getDestinationId()).frameBlock(portalConfig.getPortalBlockId()).tintColor(portalConfig.getPortalColor());
+//        if (item == class_1802.field_8705) {
+//            portalBuilder.lightWithWater();
+//        } else if (item == class_1802.field_8187) {
+//            portalBuilder.lightWithFluid(class_3612.field_15908);
+//        } else if (item != class_1802.field_8884) {
+//            portalBuilder.lightWithItem(item);
+//        }
+//
+//        PortalLink portalLink = portalBuilder.registerPortal();
+//        PortalRegistrySync.syncLinkToAllPlayers(portalLink, server);
+//        if (saveToDisk) {
+//            FilesUtils.writeObjectToJsonFile((Path)PORTAL_FOLDER.resolve(UUID.randomUUID() + ".json"), portalConfig);
+//        }
+//
+//        return portalLink;
+//    }
 
 //    public static void loadPortals(MinecraftServer server) {
 //        try {

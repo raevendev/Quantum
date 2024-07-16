@@ -3,7 +3,6 @@ package fr.unreal852.quantum.command;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fr.unreal852.quantum.Quantum;
 import fr.unreal852.quantum.QuantumManager;
 import fr.unreal852.quantum.utils.CommandArgumentsUtils;
@@ -40,8 +39,6 @@ public class CreateWorldCommand implements Command<ServerCommandSource>
                     context.getSource().sendError(TextUtils.literal("A world with the same name already exists.", Formatting.WHITE));
                     return 1;
                 }
-
-                Quantum.LOGGER.info("WORLDNAME: " + worldName);
 
                 var worldIdentifier = Identifier.of("quantum", worldName);
                 var worldConfig = new RuntimeWorldConfig();
