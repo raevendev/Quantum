@@ -1,4 +1,4 @@
-﻿package fr.unreal852.quantum.utils;
+package fr.unreal852.quantum.utils;
 
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;

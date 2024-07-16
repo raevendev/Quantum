@@ -1,4 +1,4 @@
-﻿package fr.unreal852.quantum.utils;
+package fr.unreal852.quantum.utils;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;

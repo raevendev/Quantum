@@ -1,4 +1,4 @@
-﻿package fr.unreal852.quantum;
+package fr.unreal852.quantum;
 
 public class Notes {
 

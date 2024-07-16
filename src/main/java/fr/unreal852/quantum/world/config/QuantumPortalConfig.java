@@ -1,4 +1,4 @@
-﻿package fr.unreal852.quantum.world.config;
+package fr.unreal852.quantum.world.config;
 
 import com.google.gson.annotations.Expose;
 import net.minecraft.util.Identifier;

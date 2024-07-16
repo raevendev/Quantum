@@ -2,6 +2,7 @@ package fr.unreal852.quantum;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import fr.unreal852.quantum.command.CreateWorldCommand;
+import fr.unreal852.quantum.command.TeleportWorldCommand;
 import fr.unreal852.quantum.command.suggestion.BlocksSuggestionProvider;
 import fr.unreal852.quantum.command.suggestion.DifficultySuggestionProvider;
 import fr.unreal852.quantum.command.suggestion.ItemsSuggestionProvider;
@@ -20,7 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
-public class Quantum implements ModInitializer {
+public class Quantum implements ModInitializer
+{
     // This logger is used to write text to the console and the log file.
     // It is considered best practice to use your mod id as the logger's name.
     // That way, it's clear which mod wrote info, warnings, and errors.
@@ -30,52 +32,62 @@ public class Quantum implements ModInitializer {
 
 
     @Override
-    public void onInitialize() {
+    public void onInitialize()
+    {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
 
         LOGGER.info("Hello Fabric world!");
+        LOGGER.info("CONFIG FOLDER: " + CONFIG_FOLDER);
 
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+        ServerLifecycleEvents.SERVER_STARTED.register(server ->
+        {
             // TODO: load worlds and portals
         });
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            if (environment.integrated || environment.dedicated) {
-                dispatcher.register(CommandManager.literal("qt")
-                        .then(CommandManager.literal("create")
-                                .requires(commandSource -> commandSource.hasPermissionLevel(4))
-                                .then(CommandManager.literal("world")
-                                        .then(CommandManager.argument("worldName", StringArgumentType.string())
-                                                .executes(new CreateWorldCommand()))
-                                        .then(CommandManager.argument("worldDifficulty", StringArgumentType.string())
-                                                .suggests(new DifficultySuggestionProvider())
-                                                .executes(new CreateWorldCommand()))
-                                        .then(CommandManager.argument("worldDimension", DimensionArgumentType.dimension())
-                                                .suggests(new WorldsDimensionSuggestionProvider())
-                                                .executes(new CreateWorldCommand())))));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+        {
+            if (!environment.integrated && !environment.dedicated)
+                return;
 
-                dispatcher.register(CommandManager.literal("qt")
-                        .then(CommandManager.literal("create")
-                                .requires(commandSource -> commandSource.hasPermissionLevel(4))
-                                .then(CommandManager.literal("portal")
-                                        .then(CommandManager.argument("destination", DimensionArgumentType.dimension())
-                                                .suggests(new WorldsDimensionSuggestionProvider())
-                                                .then(CommandManager.argument("portalBlock", IdentifierArgumentType.identifier())
-                                                        .suggests(new BlocksSuggestionProvider())
-                                                        .then(CommandManager.argument("activateWithItem", IdentifierArgumentType.identifier())
-                                                                .suggests(new ItemsSuggestionProvider())
-                                                                .then(CommandManager.argument("portalColor", ColorArgumentType.color())
-                                                                        .executes(new CreatePortalCommand()))))))));
+            dispatcher.register(CommandManager.literal("qt")
+                    .then(CommandManager.literal("create")
+                            .requires(commandSource -> commandSource.hasPermissionLevel(4))
+                            .then(CommandManager.literal("world")
+                                    .then(CommandManager.argument("worldName", StringArgumentType.string())
+                                            .then(CommandManager.argument("worldDifficulty", StringArgumentType.string())
+                                                    .suggests(new DifficultySuggestionProvider())
+                                                    .then(CommandManager.argument("worldDimension", DimensionArgumentType.dimension())
+                                                            .suggests(new WorldsDimensionSuggestionProvider())
+                                                            .executes(new CreateWorldCommand())
+                                                    )
+                                            )
+                                            .executes(new CreateWorldCommand())
+                                    )
+                            )
+                    )
+            );
 
-                dispatcher.register(CommandManager.literal("qt")
-                        .then(CommandManager.literal("tp")
-                                .requires(commandSource -> commandSource.hasPermissionLevel(4))
-                                .then(CommandManager.argument("world", DimensionArgumentType.dimension())
-                                        .suggests(new WorldsDimensionSuggestionProvider())
-                                        .executes(new TeleportWorldCommand()))));
-            }
+//            dispatcher.register(CommandManager.literal("qt")
+//                    .then(CommandManager.literal("create")
+//                            .requires(commandSource -> commandSource.hasPermissionLevel(4))
+//                            .then(CommandManager.literal("portal")
+//                                    .then(CommandManager.argument("destination", DimensionArgumentType.dimension())
+//                                            .suggests(new WorldsDimensionSuggestionProvider())
+//                                            .then(CommandManager.argument("portalBlock", IdentifierArgumentType.identifier())
+//                                                    .suggests(new BlocksSuggestionProvider())
+//                                                    .then(CommandManager.argument("activateWithItem", IdentifierArgumentType.identifier())
+//                                                            .suggests(new ItemsSuggestionProvider())
+//                                                            .then(CommandManager.argument("portalColor", ColorArgumentType.color())
+//                                                                    .executes(new CreatePortalCommand()))))))));
+
+            dispatcher.register(CommandManager.literal("qt")
+                    .then(CommandManager.literal("tp")
+                            .requires(commandSource -> commandSource.hasPermissionLevel(4))
+                            .then(CommandManager.argument("world", DimensionArgumentType.dimension())
+                                    .suggests(new WorldsDimensionSuggestionProvider())
+                                    .executes(new TeleportWorldCommand()))));
         });
     }
 }

@@ -1,4 +1,4 @@
-﻿package fr.unreal852.quantum.command.suggestion;
+package fr.unreal852.quantum.command.suggestion;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;

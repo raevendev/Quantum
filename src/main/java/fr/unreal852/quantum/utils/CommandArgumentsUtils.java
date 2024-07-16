@@ -1,4 +1,4 @@
-﻿package fr.unreal852.quantum.utils;
+package fr.unreal852.quantum.utils;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;

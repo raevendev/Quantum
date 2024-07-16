@@ -1,43 +1,71 @@
-﻿package fr.unreal852.quantum.command;
+package fr.unreal852.quantum.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.server.MinecraftServer;
+import fr.unreal852.quantum.Quantum;
+import fr.unreal852.quantum.QuantumManager;
+import fr.unreal852.quantum.utils.CommandArgumentsUtils;
+import fr.unreal852.quantum.utils.TextUtils;
+import fr.unreal852.quantum.world.config.QuantumWorldConfig;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionTypes;
+import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 
-public class CreateWorldCommand implements Command<ServerCommandSource> {
-    public int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        if (context.getSource() == null) {
+import java.util.Random;
+
+public class CreateWorldCommand implements Command<ServerCommandSource>
+{
+    @Override
+    public int run(CommandContext<ServerCommandSource> context)
+    {
+        if (context.getSource() == null)
             return 0;
-        } else {
-            try {
-                var minecraftServer = context.getSource().getServer();
+        else
+        {
+            try
+            {
+                var server = context.getSource().getServer();
                 var worldName = StringArgumentType.getString(context, "worldName").toLowerCase();
-                if (QuantumManager.getWorld(worldName) != null) {
-                    ((class_2168) context.getSource()).method_9226(TextUtils.literal("A world with the same name already exists.", class_124.field_1061), false);
+
+                if (QuantumManager.getWorld(worldName) != null)
+                {
+                    context.getSource().sendError(TextUtils.literal("A world with the same name already exists.", Formatting.WHITE));
                     return 1;
                 }
 
-                class_2960 worldIdentifier = new class_2960("quantum", worldName);
-                RuntimeWorldConfig worldConfig = new RuntimeWorldConfig();
-                class_1267 difficulty = (class_1267) CommandArgumentsUtils.getEnumArgument(class_1267.class, context, "worldDifficulty", server.method_30002().method_8407());
-                class_2960 dimensionType = CommandArgumentsUtils.getIdentifierArgument(context, "worldDimension", server.method_30002().method_27983().method_29177());
-                class_3218 serverWorld = server.method_3847(class_5321.method_29179(class_2378.field_25298, dimensionType));
-                if (serverWorld == null) {
-                    serverWorld = server.method_30002();
-                    Quantum.LOGGER.warn("No world found for '" + dimensionType.toString() + "'. Defaulting to minecraft:overworld");
+                Quantum.LOGGER.info("WORLDNAME: " + worldName);
+
+                var worldIdentifier = Identifier.of("quantum", worldName);
+                var worldConfig = new RuntimeWorldConfig();
+
+                var difficulty = CommandArgumentsUtils.getEnumArgument(Difficulty.class, context, "worldDifficulty", server.getSaveProperties().getDifficulty());
+                var dimensionTypeIdentifier = CommandArgumentsUtils.getIdentifierArgument(context, "worldDimension", DimensionTypes.OVERWORLD_ID);
+                var serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, dimensionTypeIdentifier));
+
+                if (serverWorld == null)
+                {
+                    serverWorld = server.getWorld(World.OVERWORLD);
+                    Quantum.LOGGER.warn("No world found for '{}'. Defaulting to minecraft:overworld", dimensionTypeIdentifier.toString());
                 }
 
                 worldConfig.setDifficulty(difficulty);
-                worldConfig.setDimensionType(serverWorld.method_44013());
-                worldConfig.setGenerator(serverWorld.method_14178().method_12129());
+                worldConfig.setDimensionType(serverWorld.getDimensionEntry());
+                worldConfig.setGenerator(serverWorld.getChunkManager().getChunkGenerator());
                 worldConfig.setSeed((new Random()).nextLong());
-                QuantumManager.getOrCreateWorld(server, new QuantumWorldConfig(worldIdentifier, dimensionType, worldConfig), true);
-                ((class_2168) context.getSource()).method_9226(TextUtils.literal("World '" + worldName + "' created !", class_124.field_1060), false);
-            } catch (Exception var9) {
-                Quantum.LOGGER.error(var9);
+
+                QuantumManager.getOrCreateWorld(server, new QuantumWorldConfig(worldIdentifier, dimensionTypeIdentifier, worldConfig), true);
+                context.getSource().sendMessage(TextUtils.literal("World '" + worldName + "' created!", Formatting.WHITE));
+            } catch (Exception e)
+            {
+                Quantum.LOGGER.error("An error occurred while creating the world.", e);
             }
 
             return 1;
