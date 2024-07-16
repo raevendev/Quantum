@@ -63,9 +63,9 @@ public final class CommandArgumentsUtils
         try
         {
             var rawSeed = StringArgumentType.getString(context, argumentName);
-            var parsedSeed = ParseUtils.tryParseLong(rawSeed, -1);
+            var parsedSeed = ParseUtils.tryParseLong(rawSeed, 0);
 
-            if (parsedSeed != -1) // The seed was given in a long format we can return it
+            if (parsedSeed != 0) // The seed was given in a long format we can return it
                 return parsedSeed;
 
             // The seed was given in a string format, we have to hash it

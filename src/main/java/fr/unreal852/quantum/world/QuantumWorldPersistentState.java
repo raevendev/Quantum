@@ -14,11 +14,8 @@ public class QuantumWorldPersistentState extends PersistentState
 {
     private static final String DATA_KEY = Quantum.MOD_ID;
     private static final String WORLDS_NBT_KEY = Quantum.MOD_ID + ":worlds";
-    private static final Type<QuantumWorldPersistentState> PersistentStateTypeLoader = new Type<>(
-            QuantumWorldPersistentState::new, // If there's no 'QuantumWorldPersistentState' yet create one
-            QuantumWorldPersistentState::fromNbt, // If there is a 'QuantumWorldPersistentState' NBT, parse it with 'createFromNbt'
-            null // Supposed to be an 'DataFixTypes' enum, but we can just pass null
-    );
+    private static final Type<QuantumWorldPersistentState> PersistentStateTypeLoader =
+            new Type<>(QuantumWorldPersistentState::new, QuantumWorldPersistentState::fromNbt, null);
 
     private final List<QuantumWorldData> worlds = new ArrayList<>();
 

@@ -4,7 +4,10 @@ import fr.unreal852.quantum.command.CommandRegistration;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.SignBlock;
+import net.minecraft.util.ActionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +43,27 @@ public class Quantum implements ModInitializer
             // TODO: load portals
             loadExistingWorlds(server);
         });
+
+        UseBlockCallback.EVENT.register(((player, world, hand, hitResult) ->
+        {
+
+            // TODO: Use signs instead of portals for now.
+
+            if (world.isClient)
+                return ActionResult.PASS;
+            if (player.isSpectator() || player.isSneaking())
+                return ActionResult.PASS;
+
+            var blockState = world.getBlockState(hitResult.getBlockPos());
+            var block = blockState.getBlock();
+
+            if (block instanceof SignBlock)
+            {
+                Quantum.LOGGER.info("Sign block found.");
+            }
+
+            return ActionResult.PASS;
+        }));
     }
 
 }
