@@ -7,7 +7,7 @@ import fr.unreal852.quantum.Quantum;
 import fr.unreal852.quantum.QuantumManager;
 import fr.unreal852.quantum.utils.CommandArgumentsUtils;
 import fr.unreal852.quantum.utils.TextUtils;
-import fr.unreal852.quantum.world.config.QuantumWorldConfig;
+import fr.unreal852.quantum.world.QuantumWorldData;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
@@ -45,6 +45,7 @@ public class CreateWorldCommand implements Command<ServerCommandSource>
 
                 var difficulty = CommandArgumentsUtils.getEnumArgument(Difficulty.class, context, "worldDifficulty", server.getSaveProperties().getDifficulty());
                 var dimensionTypeIdentifier = CommandArgumentsUtils.getIdentifierArgument(context, "worldDimension", DimensionTypes.OVERWORLD_ID);
+                var seed = CommandArgumentsUtils.getSeedArgument(context, "worldSeed", (new Random()).nextLong());
                 var serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, dimensionTypeIdentifier));
 
                 if (serverWorld == null)
@@ -56,11 +57,12 @@ public class CreateWorldCommand implements Command<ServerCommandSource>
                 worldConfig.setDifficulty(difficulty);
                 worldConfig.setDimensionType(serverWorld.getDimensionEntry());
                 worldConfig.setGenerator(serverWorld.getChunkManager().getChunkGenerator());
-                worldConfig.setSeed((new Random()).nextLong());
+                worldConfig.setSeed(seed);
 
-                QuantumManager.getOrCreateWorld(server, new QuantumWorldConfig(worldIdentifier, dimensionTypeIdentifier, worldConfig), true);
+                QuantumManager.getOrOpenPersistentWorld(server, new QuantumWorldData(worldIdentifier, dimensionTypeIdentifier, worldConfig), true);
                 context.getSource().sendMessage(TextUtils.literal("World '" + worldName + "' created!", Formatting.WHITE));
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Quantum.LOGGER.error("An error occurred while creating the world.", e);
             }

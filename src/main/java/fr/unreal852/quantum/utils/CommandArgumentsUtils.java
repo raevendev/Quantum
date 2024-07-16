@@ -57,5 +57,27 @@ public final class CommandArgumentsUtils
             return defaultValue;
         }
     }
+
+    public static long getSeedArgument(CommandContext<ServerCommandSource> context, String argumentName, long defaultValue)
+    {
+        try
+        {
+            var rawSeed = StringArgumentType.getString(context, argumentName);
+            var parsedSeed = ParseUtils.tryParseLong(rawSeed, -1);
+
+            if (parsedSeed != -1) // The seed was given in a long format we can return it
+                return parsedSeed;
+
+            // The seed was given in a string format, we have to hash it
+            for (int i = 0; i < rawSeed.length(); i++)
+                parsedSeed = 31 * parsedSeed + rawSeed.charAt(i);
+
+            return parsedSeed;
+        }
+        catch (IllegalArgumentException e)
+        {
+            return defaultValue;
+        }
+    }
 }
 

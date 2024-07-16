@@ -1,4 +1,4 @@
-﻿package fr.unreal852.quantum.command;
+package fr.unreal852.quantum.command;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import fr.unreal852.quantum.command.suggestion.DifficultySuggestionProvider;
@@ -25,10 +25,23 @@ public final class CommandRegistration
                                                     .suggests(new DifficultySuggestionProvider())
                                                     .then(CommandManager.argument("worldDimension", DimensionArgumentType.dimension())
                                                             .suggests(new WorldsDimensionSuggestionProvider())
-                                                            .executes(new CreateWorldCommand())
+                                                            .then(CommandManager.argument("worldSeed", StringArgumentType.string())
+                                                                    .executes(new CreateWorldCommand())
+                                                            )
                                                     )
+                                                    .executes(new CreateWorldCommand())
                                             )
-                                            .executes(new CreateWorldCommand())
+                                    )
+                            )
+                    ));
+
+            dispatcher.register(CommandManager.literal("qt")
+                    .then(CommandManager.literal("delete")
+                            .requires(commandSource -> commandSource.hasPermissionLevel(4))
+                            .then(CommandManager.literal("world")
+                                    .then(CommandManager.argument("worldName", DimensionArgumentType.dimension())
+                                            .suggests(new WorldsDimensionSuggestionProvider())
+                                            .executes(new DeleteWorldCommand())
                                     )
                             )
                     )

@@ -1,7 +1,5 @@
 package fr.unreal852.quantum.utils;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;

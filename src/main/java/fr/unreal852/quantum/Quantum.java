@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
+import static fr.unreal852.quantum.QuantumManager.loadExistingWorlds;
+
 public class Quantum implements ModInitializer
 {
     // Mappings
@@ -18,8 +20,6 @@ public class Quantum implements ModInitializer
     // class_2961 = Identifier.Serializer
 
     // TODO: Cleanup & Refactor Project
-    // TODO: Actually we are saving & loading worlds/portals from json saved in the configuration directory.
-    //       This works nice but i think there might be a better way, like using minecraft's NBT PersistentState.
     // TODO: Try to switch to Kotlin
 
     public static final String MOD_ID = "quantum";
@@ -37,7 +37,9 @@ public class Quantum implements ModInitializer
 
         ServerLifecycleEvents.SERVER_STARTED.register(server ->
         {
-            // TODO: load worlds and portals
+            // TODO: load portals
+            loadExistingWorlds(server);
         });
     }
+
 }
