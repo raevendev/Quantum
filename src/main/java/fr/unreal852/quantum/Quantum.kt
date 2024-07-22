@@ -1,5 +1,6 @@
 package fr.unreal852.quantum
 
+import fr.unreal852.quantum.callback.PlayerUseSignHandler
 import fr.unreal852.quantum.command.CommandRegistration
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -32,32 +33,14 @@ class Quantum : ModInitializer {
             }
         })
 
-        UseBlockCallback.EVENT.register((UseBlockCallback { player: PlayerEntity, world: World, hand: Hand?, hitResult: BlockHitResult ->
-
-            // TODO: Use signs instead of portals for now.
-            if (world.isClient) return@UseBlockCallback ActionResult.PASS
-            if (player.isSpectator || player.isSneaking) return@UseBlockCallback ActionResult.PASS
-
-            val blockState = world.getBlockState(hitResult.blockPos)
-            val block = blockState.block
-
-            if (block is SignBlock) {
-                LOGGER.info("Sign block found.")
-            }
-            ActionResult.PASS
-        }))
+        UseBlockCallback.EVENT.register(PlayerUseSignHandler())
     }
 
     companion object {
-        // Mappings
-        // class_3218 = ServerWorld
-        // class_2960 = Identifier
-        // class_2961 = Identifier.Serializer
         // TODO: Cleanup & Refactor Project
         // TODO: Try to switch to Kotlin
         const val MOD_ID: String = "quantum"
 
-        @JvmField
         val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
         val CONFIG_FOLDER: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
     }

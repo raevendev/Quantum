@@ -23,8 +23,7 @@ class TeleportWorldCommand : Command<ServerCommandSource> {
                 }
 
                 val worldName = IdentifierArgumentType.getIdentifier(context, "world")
-                val world = context.source!!
-                    .server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldName))
+                val world = context.source!!.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldName))
                 if (world == null) {
                     context.source!!.sendError(Text.literal("The specified world '$worldName' doesn't exist."))
                     return 0

@@ -1,35 +1,20 @@
 package fr.unreal852.quantum.world
 
+import fr.unreal852.quantum.utils.Extensions.getIdentifier
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.Identifier
 import xyz.nucleoid.fantasy.RuntimeWorldConfig
 
-class QuantumWorldData {
+class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorldConfig: RuntimeWorldConfig?) {
 
-    private var enabled = true
+    var enabled = true
 
-    lateinit var worldId: Identifier
+    var worldId: Identifier = worldId
         private set
-    lateinit var dimensionId: Identifier
+    var dimensionId: Identifier = dimensionId
         private set
-    lateinit var runtimeWorldConfig: RuntimeWorldConfig
+    var runtimeWorldConfig: RuntimeWorldConfig? = runtimeWorldConfig
         private set
-
-    constructor()
-
-    constructor(worldId: Identifier, dimensionId: Identifier, runtimeWorldConfig: RuntimeWorldConfig) {
-        this.worldId = worldId
-        this.dimensionId = dimensionId
-        this.runtimeWorldConfig = runtimeWorldConfig
-    }
-
-    fun isEnabled(): Boolean {
-        return enabled
-    }
-
-    fun setEnabled(enabled: Boolean) {
-        this.enabled = enabled
-    }
 
     fun writeToNbt(nbt: NbtCompound) {
         nbt.putBoolean("enabled", enabled)
@@ -38,12 +23,13 @@ class QuantumWorldData {
     }
 
     companion object {
-        @JvmStatic
+
         fun fromNbt(nbt: NbtCompound): QuantumWorldData {
-            val quantumWorldData = QuantumWorldData()
+            val quantumWorldData = QuantumWorldData(
+                nbt.getIdentifier("worldId"),
+                nbt.getIdentifier("dimensionId"), null
+            )
             quantumWorldData.enabled = nbt.getBoolean("enabled")
-            quantumWorldData.worldId = Identifier.of((nbt.getString("worldId")))
-            quantumWorldData.dimensionId = Identifier.of((nbt.getString("dimensionId")))
             return quantumWorldData
         }
     }
