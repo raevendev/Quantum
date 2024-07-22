@@ -1,93 +1,83 @@
-package fr.unreal852.quantum;
+package fr.unreal852.quantum
 
-import fr.unreal852.quantum.world.QuantumWorld;
-import fr.unreal852.quantum.world.QuantumWorldData;
-import fr.unreal852.quantum.world.QuantumWorldPersistentState;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.GameRules;
-import xyz.nucleoid.fantasy.Fantasy;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import fr.unreal852.quantum.world.QuantumWorld
+import fr.unreal852.quantum.world.QuantumWorldData
+import fr.unreal852.quantum.world.QuantumWorldPersistentState
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.MinecraftServer
+import net.minecraft.util.Identifier
+import net.minecraft.world.GameRules
+import xyz.nucleoid.fantasy.Fantasy
+import xyz.nucleoid.fantasy.RuntimeWorldConfig
+import java.util.concurrent.ConcurrentHashMap
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+object QuantumManager {
+    private val WORLDS: MutableMap<Identifier, QuantumWorld> = ConcurrentHashMap()
 
-public final class QuantumManager
-{
-    private static final Map<Identifier, QuantumWorld> WORLDS = new ConcurrentHashMap<>();
-
-    public static QuantumWorld getWorld(Identifier identifier)
-    {
-        return WORLDS.get(identifier);
+    @JvmStatic
+    fun getWorld(identifier: Identifier): QuantumWorld? {
+        return WORLDS[identifier]
     }
 
-    public static QuantumWorld getWorld(String worldName)
-    {
-        return getWorld(Identifier.of("quantum", worldName));
+    @JvmStatic
+    fun getWorld(worldName: String): QuantumWorld? {
+        return getWorld(Identifier.of("quantum", worldName))
     }
 
-    public static QuantumWorld getOrOpenPersistentWorld(MinecraftServer server, QuantumWorldData worldData, boolean saveToDisk)
-    {
-        if (WORLDS.containsKey(worldData.getWorldId()))
-            return WORLDS.get(worldData.getWorldId());
+    @JvmStatic
+    fun getOrOpenPersistentWorld(
+        server: MinecraftServer,
+        worldData: QuantumWorldData,
+        saveToDisk: Boolean
+    ): QuantumWorld? {
+        if (WORLDS.containsKey(worldData.worldId)) return WORLDS[worldData.worldId]
 
-        var fantasy = Fantasy.get(server);
-        var runtimeWorldConfig = getOrCreateRuntimeWorldConfig(server, worldData);
-        var runtimeWorldHandle = fantasy.getOrOpenPersistentWorld(worldData.getWorldId(), runtimeWorldConfig);
+        val fantasy = Fantasy.get(server)
+        val runtimeWorldConfig = getOrCreateRuntimeWorldConfig(server, worldData)
+        val runtimeWorldHandle = fantasy.getOrOpenPersistentWorld(worldData.worldId, runtimeWorldConfig)
 
         // TODO: CustomPortalsMod.dims.put(worldConfig.getWorldId(), runtimeWorldHandle.getRegistryKey());
+        val world = QuantumWorld(runtimeWorldHandle, worldData)
+        WORLDS[worldData.worldId] = world
 
-        QuantumWorld world = new QuantumWorld(runtimeWorldHandle, worldData);
-        WORLDS.put(worldData.getWorldId(), world);
+        if (saveToDisk) QuantumWorldPersistentState.getQuantumState(server).addWorldData(worldData)
 
-        if (saveToDisk)
-            QuantumWorldPersistentState.getQuantumState(server).addWorldData(worldData);
-
-        return world;
+        return world
     }
 
-    public static RuntimeWorldConfig getOrCreateRuntimeWorldConfig(MinecraftServer server, QuantumWorldData worldData)
-    {
-        if (worldData.getRuntimeWorldConfig() != null)
-            return worldData.getRuntimeWorldConfig();
+    fun getOrCreateRuntimeWorldConfig(server: MinecraftServer, worldData: QuantumWorldData): RuntimeWorldConfig {
+        if (worldData.runtimeWorldConfig != null) return worldData.runtimeWorldConfig
 
-        var runtimeWorldConfig = new RuntimeWorldConfig();
-        var serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldData.getDimensionId()));
+        val runtimeWorldConfig = RuntimeWorldConfig()
+        val serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldData.dimensionId))
 
-        if (serverWorld != null)
-        {
+        if (serverWorld != null) {
             runtimeWorldConfig
-                    .setDimensionType(serverWorld.getDimensionEntry())
-                    .setGenerator(serverWorld.getChunkManager().getChunkGenerator());
+                .setDimensionType(serverWorld.dimensionEntry)
+                .setGenerator(serverWorld.chunkManager.chunkGenerator)
         }
 
-        if (runtimeWorldConfig.getGenerator() == null)
-        {
-            runtimeWorldConfig.setGenerator(server.getOverworld().getChunkManager().getChunkGenerator());
-            Quantum.LOGGER.warn("The config has no generator, setting the generator to the default one.");
+        if (runtimeWorldConfig.generator == null) {
+            runtimeWorldConfig.setGenerator(server.overworld.chunkManager.chunkGenerator)
+            Quantum.LOGGER.warn("The config has no generator, setting the generator to the default one.")
         }
 
-        runtimeWorldConfig.setGameRule(GameRules.DO_DAYLIGHT_CYCLE, true);
+        runtimeWorldConfig.setGameRule(GameRules.DO_DAYLIGHT_CYCLE, true)
 
-        return runtimeWorldConfig;
+        return runtimeWorldConfig
     }
 
-    public static void loadExistingWorlds(MinecraftServer server)
-    {
-        var state = QuantumWorldPersistentState.getQuantumState(server);
+    fun loadExistingWorlds(server: MinecraftServer) {
+        val state = QuantumWorldPersistentState.getQuantumState(server)
 
-        for (var world : state.getWorlds())
-        {
+        for (world in state.getWorlds()) {
             if (!world.isEnabled())
-                continue;
-            getOrOpenPersistentWorld(server, world, false);
-            Quantum.LOGGER.info("Found enabled world '{}', loading it.", world.getWorldId());
+                continue
+            getOrOpenPersistentWorld(server, world, false)
+            Quantum.LOGGER.info("Found enabled world '{}', loading it.", world.worldId)
         }
-    }
-
-    // Old Portal code. =====================================
+    } // Old Portal code. =====================================
     //    public static PortalLink createPortal(MinecraftServer server, QuantumWorldPortalConfig portalConfig, boolean saveToDisk) {
     //        class_1792 item = (class_1792)class_2378.field_11142.method_10223(portalConfig.getPortalIgniteItemId());
     //        CustomPortalBuilder portalBuilder = CustomPortalBuilder.beginPortal().destDimID(portalConfig.getDestinationId()).frameBlock(portalConfig.getPortalBlockId()).tintColor(portalConfig.getPortalColor());
@@ -107,7 +97,6 @@ public final class QuantumManager
     //
     //        return portalLink;
     //    }
-
     //    public static void loadPortals(MinecraftServer server) {
     //        try {
     //            File directory = PORTAL_FOLDER.toFile();

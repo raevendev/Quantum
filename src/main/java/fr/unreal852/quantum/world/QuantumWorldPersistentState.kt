@@ -1,72 +1,68 @@
-package fr.unreal852.quantum.world;
+package fr.unreal852.quantum.world
 
-import fr.unreal852.quantum.Quantum;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
+import fr.unreal852.quantum.Quantum
+import fr.unreal852.quantum.world.QuantumWorldData.Companion.fromNbt
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
+import net.minecraft.registry.RegistryWrapper.WrapperLookup
+import net.minecraft.server.MinecraftServer
+import net.minecraft.world.PersistentState
 
-import java.util.ArrayList;
-import java.util.List;
+class QuantumWorldPersistentState : PersistentState() {
 
-public class QuantumWorldPersistentState extends PersistentState
-{
-    private static final String DATA_KEY = Quantum.MOD_ID;
-    private static final String WORLDS_NBT_KEY = Quantum.MOD_ID + ":worlds";
-    private static final Type<QuantumWorldPersistentState> PersistentStateTypeLoader =
-            new Type<>(QuantumWorldPersistentState::new, QuantumWorldPersistentState::fromNbt, null);
+    private val worlds: MutableList<QuantumWorldData> = ArrayList()
 
-    private final List<QuantumWorldData> worlds = new ArrayList<>();
-
-    public List<QuantumWorldData> getWorlds()
-    {
-        return worlds;
+    fun getWorlds(): List<QuantumWorldData> {
+        return worlds
     }
 
-    public void addWorldData(QuantumWorldData quantumWorldData)
-    {
-        worlds.add(quantumWorldData);
-        markDirty();
+    fun addWorldData(quantumWorldData: QuantumWorldData) {
+        worlds.add(quantumWorldData)
+        markDirty()
     }
 
-    public void removeWorldData(QuantumWorldData quantumWorldData)
-    {
-        worlds.remove(quantumWorldData);
-        markDirty();
+    fun removeWorldData(quantumWorldData: QuantumWorldData) {
+        worlds.remove(quantumWorldData)
+        markDirty()
     }
 
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup)
-    {
-        var worldsNbtList = new NbtList();
-        for (var entry : worlds)
-        {
-            var entryNbt = new NbtCompound();
-            entry.writeToNbt(entryNbt);
-            worldsNbtList.add(entryNbt);
+    override fun writeNbt(nbt: NbtCompound, registryLookup: WrapperLookup): NbtCompound {
+        val worldsNbtList = NbtList()
+        for (entry in worlds) {
+            val entryNbt = NbtCompound()
+            entry.writeToNbt(entryNbt)
+            worldsNbtList.add(entryNbt)
         }
-        nbt.put(WORLDS_NBT_KEY, worldsNbtList);
-        return nbt;
+        nbt.put(WORLDS_NBT_KEY, worldsNbtList)
+        return nbt
     }
 
-    public static QuantumWorldPersistentState getQuantumState(MinecraftServer server)
-    {
-        var stateManager = server.getOverworld().getPersistentStateManager();
-        var quantumState = stateManager.getOrCreate(PersistentStateTypeLoader, DATA_KEY);
-        quantumState.markDirty();
-        return quantumState;
-    }
+    companion object {
 
-    public static QuantumWorldPersistentState fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup)
-    {
-        var quantumWorldPersistentState = new QuantumWorldPersistentState();
-        var worldsNbtList = nbt.getList(WORLDS_NBT_KEY, 10); // 10 is the NbtCompound type
-        for (int i = 0; i < worldsNbtList.size(); i++)
-        {
-            var entryNbt = worldsNbtList.getCompound(i);
-            quantumWorldPersistentState.worlds.add(QuantumWorldData.fromNbt(entryNbt));
+        private const val DATA_KEY = Quantum.MOD_ID
+        private const val WORLDS_NBT_KEY = Quantum.MOD_ID + ":worlds"
+
+        private val PersistentStateTypeLoader = Type(
+            { QuantumWorldPersistentState() },
+            { nbt: NbtCompound, registryLookup: WrapperLookup? -> fromNbt(nbt, registryLookup) },
+            null
+        )
+
+        fun getQuantumState(server: MinecraftServer): QuantumWorldPersistentState {
+            val stateManager = server.overworld.persistentStateManager
+            val quantumState = stateManager.getOrCreate(PersistentStateTypeLoader, DATA_KEY)
+            quantumState.markDirty()
+            return quantumState
         }
-        return quantumWorldPersistentState;
+
+        fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup?): QuantumWorldPersistentState {
+            val quantumWorldPersistentState = QuantumWorldPersistentState()
+            val worldsNbtList = nbt.getList(WORLDS_NBT_KEY, 10) // 10 is the NbtCompound type
+            for (i in worldsNbtList.indices) {
+                val entryNbt = worldsNbtList.getCompound(i)
+                quantumWorldPersistentState.worlds.add(fromNbt(entryNbt))
+            }
+            return quantumWorldPersistentState
+        }
     }
 }

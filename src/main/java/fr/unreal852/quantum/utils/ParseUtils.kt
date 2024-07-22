@@ -1,16 +1,12 @@
-package fr.unreal852.quantum.utils;
+package fr.unreal852.quantum.utils
 
-public final class ParseUtils
-{
-    public static long tryParseLong(String value, int defaultVal)
-    {
-        try
-        {
-            return Long.parseLong(value);
-        }
-        catch (NumberFormatException e)
-        {
-            return defaultVal;
+object ParseUtils {
+    @JvmStatic
+    fun tryParseLong(value: String, defaultVal: Int): Long {
+        return try {
+            value.toLong()
+        } catch (e: NumberFormatException) {
+            defaultVal.toLong()
         }
     }
 }

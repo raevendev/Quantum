@@ -1,47 +1,34 @@
-package fr.unreal852.quantum.world.config;
+package fr.unreal852.quantum.world.config
 
-import com.google.gson.annotations.Expose;
-import net.minecraft.util.Identifier;
+import com.google.gson.annotations.Expose
+import net.minecraft.util.Identifier
 
-public class QuantumPortalConfig {
+class QuantumPortalConfig {
     @Expose
-    private boolean enabled = true;
+    val isEnabled: Boolean = true
+
     @Expose
-    private Identifier destinationId;
+    var destinationId: Identifier? = null
+        private set
+
     @Expose
-    private Identifier portalBlockId;
+    var portalBlockId: Identifier? = null
+        private set
+
     @Expose
-    private Identifier portalIgniteItemId;
+    var portalIgniteItemId: Identifier? = null
+        private set
+
     @Expose
-    private int portalColor;
+    var portalColor: Int = 0
+        private set
 
-    public QuantumPortalConfig() {
-    }
+    constructor()
 
-    public QuantumPortalConfig(Identifier destId, Identifier portalBlockId, Identifier portalIgniteItemId, int color) {
-        this.destinationId = destId;
-        this.portalBlockId = portalBlockId;
-        this.portalIgniteItemId = portalIgniteItemId;
-        this.portalColor = color;
-    }
-
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    public Identifier getDestinationId() {
-        return this.destinationId;
-    }
-
-    public Identifier getPortalBlockId() {
-        return this.portalBlockId;
-    }
-
-    public Identifier getPortalIgniteItemId() {
-        return this.portalIgniteItemId;
-    }
-
-    public int getPortalColor() {
-        return this.portalColor;
+    constructor(destId: Identifier?, portalBlockId: Identifier?, portalIgniteItemId: Identifier?, color: Int) {
+        this.destinationId = destId
+        this.portalBlockId = portalBlockId
+        this.portalIgniteItemId = portalIgniteItemId
+        this.portalColor = color
     }
 }

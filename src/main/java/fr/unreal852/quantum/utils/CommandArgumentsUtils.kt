@@ -1,83 +1,63 @@
-package fr.unreal852.quantum.utils;
+﻿package fr.unreal852.quantum.utils
 
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.command.argument.ColorArgumentType;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.context.CommandContext
+import net.minecraft.command.argument.ColorArgumentType
+import net.minecraft.command.argument.IdentifierArgumentType
+import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 
-public final class CommandArgumentsUtils
-{
-    public static String getStringArgument(CommandContext<ServerCommandSource> context, String argumentName, String defaultValue)
-    {
-        try
-        {
-            return StringArgumentType.getString(context, argumentName);
-        }
-        catch (IllegalArgumentException e)
-        {
-            return defaultValue;
+object CommandArgumentsUtils {
+
+    fun getStringArgument(context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: String): String {
+        return try {
+            StringArgumentType.getString(context, argumentName)
+        } catch (e: IllegalArgumentException) {
+            defaultValue
         }
     }
 
-    public static Identifier getIdentifierArgument(CommandContext<ServerCommandSource> context, String argumentName, Identifier defaultValue)
-    {
-        try
-        {
-            return IdentifierArgumentType.getIdentifier(context, argumentName);
-        }
-        catch (IllegalArgumentException e)
-        {
-            return defaultValue;
+    fun getIdentifierArgument(context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: Identifier): Identifier {
+        return try {
+            IdentifierArgumentType.getIdentifier(context, argumentName)
+        } catch (e: IllegalArgumentException) {
+            defaultValue
         }
     }
 
-    public static <T extends Enum<T>> T getEnumArgument(Class<T> enumClass, CommandContext<ServerCommandSource> context, String argumentName, T defaultValue)
-    {
-        try
-        {
-            return Enum.valueOf(enumClass, StringArgumentType.getString(context, argumentName));
-        }
-        catch (IllegalArgumentException e)
-        {
-            return defaultValue;
+    fun <T : Enum<T>> getEnumArgument(enumClass: Class<T>, context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: T): T {
+        return try {
+            enumClass.enumConstants.first { it.name == StringArgumentType.getString(context, argumentName) }
+        } catch (e: IllegalArgumentException) {
+            defaultValue
         }
     }
 
-    public static Formatting getColorArgument(CommandContext<ServerCommandSource> context, String argumentName, Formatting defaultValue)
-    {
-        try
-        {
-            return ColorArgumentType.getColor(context, argumentName);
-        }
-        catch (IllegalArgumentException e)
-        {
-            return defaultValue;
+    fun getColorArgument(context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: Formatting): Formatting {
+        return try {
+            ColorArgumentType.getColor(context, argumentName)
+        } catch (e: IllegalArgumentException) {
+            defaultValue
         }
     }
 
-    public static long getSeedArgument(CommandContext<ServerCommandSource> context, String argumentName, long defaultValue)
-    {
-        try
-        {
-            var rawSeed = StringArgumentType.getString(context, argumentName);
-            var parsedSeed = ParseUtils.tryParseLong(rawSeed, 0);
+    fun getSeedArgument(context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: Long): Long {
+        return try {
+            val rawSeed = StringArgumentType.getString(context, argumentName)
+            var parsedSeed = ParseUtils.tryParseLong(rawSeed, 0)
 
-            if (parsedSeed != 0) // The seed was given in a long format we can return it
-                return parsedSeed;
+            if (parsedSeed != 0L) // The seed was given in a long format we can return it
+                return parsedSeed
 
             // The seed was given in a string format, we have to hash it
-            for (int i = 0; i < rawSeed.length(); i++)
-                parsedSeed = 31 * parsedSeed + rawSeed.charAt(i);
+            for (i in rawSeed.indices) {
+                parsedSeed = 31 * parsedSeed + rawSeed[i].code
+            }
 
-            return parsedSeed;
-        }
-        catch (IllegalArgumentException e)
-        {
-            return defaultValue;
+            parsedSeed
+        } catch (e: IllegalArgumentException) {
+            defaultValue
         }
     }
 }
-
