@@ -37,8 +37,7 @@ class Quantum : ModInitializer {
     }
 
     companion object {
-        // TODO: Cleanup & Refactor Project
-        // TODO: Try to switch to Kotlin
+
         const val MOD_ID: String = "quantum"
 
         val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
