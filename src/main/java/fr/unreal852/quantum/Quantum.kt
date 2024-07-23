@@ -1,19 +1,15 @@
 package fr.unreal852.quantum
 
+import fr.unreal852.quantum.callback.PlayerRespawnHandler
 import fr.unreal852.quantum.callback.PlayerUseSignHandler
 import fr.unreal852.quantum.command.CommandRegistration
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarted
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.block.SignBlock
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
-import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -34,6 +30,7 @@ class Quantum : ModInitializer {
         })
 
         UseBlockCallback.EVENT.register(PlayerUseSignHandler())
+        ServerPlayerEvents.AFTER_RESPAWN.register(PlayerRespawnHandler())
     }
 
     companion object {
