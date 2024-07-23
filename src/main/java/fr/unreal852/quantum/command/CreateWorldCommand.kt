@@ -1,16 +1,21 @@
 package fr.unreal852.quantum.command
 
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.QuantumManager.getOrOpenPersistentWorld
 import fr.unreal852.quantum.QuantumManager.getWorld
+import fr.unreal852.quantum.command.suggestion.DifficultySuggestionProvider
+import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
 import fr.unreal852.quantum.utils.CommandArgumentsUtils
 import fr.unreal852.quantum.utils.TextUtils
 import fr.unreal852.quantum.world.QuantumWorldData
+import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -61,6 +66,40 @@ class CreateWorldCommand : Command<ServerCommandSource> {
             }
 
             return 1
+        }
+    }
+
+    companion object {
+        fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            dispatcher.register(CommandManager.literal("qt")
+                .then(CommandManager.literal("create")
+                    .requires { commandSource: ServerCommandSource -> commandSource.hasPermissionLevel(4) }
+                    .then(
+                        CommandManager.literal("world")
+                            .then(
+                                CommandManager.argument("worldName", StringArgumentType.string())
+                                    .then(
+                                        CommandManager.argument("worldDifficulty", StringArgumentType.string())
+                                            .suggests(DifficultySuggestionProvider())
+                                            .then(
+                                                CommandManager.argument(
+                                                    "worldDimension",
+                                                    DimensionArgumentType.dimension()
+                                                )
+                                                    .suggests(WorldsDimensionSuggestionProvider())
+                                                    .then(
+                                                        CommandManager.argument(
+                                                            "worldSeed",
+                                                            StringArgumentType.string()
+                                                        )
+                                                            .executes(CreateWorldCommand())
+                                                    )
+                                            )
+                                            .executes(CreateWorldCommand())
+                                    )
+                            )
+                    )
+                ))
         }
     }
 }

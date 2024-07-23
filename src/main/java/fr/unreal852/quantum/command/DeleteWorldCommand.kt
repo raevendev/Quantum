@@ -1,19 +1,22 @@
 package fr.unreal852.quantum.command
 
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.QuantumManager.getWorld
+import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
 import fr.unreal852.quantum.utils.TextUtils
 import fr.unreal852.quantum.world.QuantumWorldPersistentState
+import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
+import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Formatting
 import xyz.nucleoid.fantasy.Fantasy
 
 class DeleteWorldCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
-        context
         if (context.source == null) return 0
         else {
             try {
@@ -42,6 +45,24 @@ class DeleteWorldCommand : Command<ServerCommandSource> {
             }
 
             return 1
+        }
+    }
+
+    companion object {
+        fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            dispatcher.register(CommandManager.literal("qt")
+                .then(CommandManager.literal("delete")
+                    .requires { commandSource: ServerCommandSource -> commandSource.hasPermissionLevel(4) }
+                    .then(
+                        CommandManager.literal("world")
+                            .then(
+                                CommandManager.argument("worldName", DimensionArgumentType.dimension())
+                                    .suggests(WorldsDimensionSuggestionProvider())
+                                    .executes(DeleteWorldCommand())
+                            )
+                    )
+                )
+            )
         }
     }
 }
