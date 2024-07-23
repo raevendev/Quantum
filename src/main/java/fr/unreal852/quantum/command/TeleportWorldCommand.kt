@@ -3,9 +3,9 @@ package fr.unreal852.quantum.command
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
+import fr.unreal852.quantum.utils.Extensions.teleportTo
 import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.command.ServerCommandSource
@@ -29,8 +29,7 @@ class TeleportWorldCommand : Command<ServerCommandSource> {
                     return 0
                 }
 
-                val pos = world.spawnPos
-                player.teleport(world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), PositionFlag.VALUES, world.spawnAngle, 0.0f)
+                player.teleportTo(world, world.spawnPos.toBottomCenterPos())
             } catch (e: Exception) {
                 Quantum.LOGGER.error("An error occurred while teleporting the player.", e)
             }

@@ -1,4 +1,6 @@
-﻿package fr.unreal852.quantum.utils
+﻿@file:Suppress("unused")
+
+package fr.unreal852.quantum.utils
 
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
@@ -15,6 +17,11 @@ object Extensions {
 
     fun PlayerEntity.teleportTo(targetWorld: ServerWorld, pos: Vec3d) {
         val teleportTarget = TeleportTarget(targetWorld, pos, Vec3d.ZERO, 0f, 0f, false) {}
+        this.teleportTo(teleportTarget)
+    }
+
+    fun PlayerEntity.teleportTo(targetWorld: ServerWorld, pos: Vec3d, yaw: Float, pitch: Float) {
+        val teleportTarget = TeleportTarget(targetWorld, pos, Vec3d.ZERO, yaw, pitch, false) {}
         this.teleportTo(teleportTarget)
     }
 }
