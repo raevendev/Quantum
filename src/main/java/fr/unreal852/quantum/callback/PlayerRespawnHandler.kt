@@ -1,26 +1,24 @@
 ﻿package fr.unreal852.quantum.callback
 
-import fr.unreal852.quantum.Quantum
-import fr.unreal852.quantum.utils.Extensions.teleportTo
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents.AfterRespawn
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.minecraft.block.SignBlock
-import net.minecraft.block.WallSignBlock
-import net.minecraft.block.entity.SignBlockEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
+import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket
+import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
-import net.minecraft.util.Identifier
-import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.world.World
 
 class PlayerRespawnHandler : AfterRespawn {
 
-    override fun afterRespawn(oldPlayer: ServerPlayerEntity?, newPlayer: ServerPlayerEntity?, alive: Boolean) {
-        Quantum.LOGGER.info("RESPAWNED")
+    // A Minecraft bug ignore the world spawn angle, this fix it for now
+    // https://bugs.mojang.com/browse/MC-200092
+
+    override fun afterRespawn(oldPlayer: ServerPlayerEntity, newPlayer: ServerPlayerEntity, alive: Boolean) {
+
+        val centeredPos = newPlayer.world.spawnPos.toBottomCenterPos()
+
+        val playerPositionPacket = PlayerPositionLookS2CPacket(
+            centeredPos.x, centeredPos.y, centeredPos.z,
+            newPlayer.world.spawnAngle, 0f, PositionFlag.ROT, 0
+        )
+
+        newPlayer.networkHandler.sendPacket(playerPositionPacket)
     }
 }
