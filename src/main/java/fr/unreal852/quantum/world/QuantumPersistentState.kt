@@ -55,6 +55,7 @@ class QuantumPersistentState : PersistentState() {
             return quantumState
         }
 
+        @Suppress("UNUSED_PARAMETER")
         fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup?): QuantumPersistentState {
             val quantumPersistentState = QuantumPersistentState()
             val worldsNbtList = nbt.getList(WORLDS_NBT_KEY, 10) // 10 is the NbtCompound type
