@@ -3,9 +3,7 @@ package fr.unreal852.quantum
 import fr.unreal852.quantum.utils.Extensions.getWorldByIdentifier
 import fr.unreal852.quantum.world.QuantumWorld
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.world.QuantumWorldPersistentState
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
+import fr.unreal852.quantum.world.QuantumPersistentState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import net.minecraft.world.GameRules
@@ -37,7 +35,7 @@ object QuantumManager {
         WORLDS[worldData.worldId] = world
 
         if (saveToDisk)
-            QuantumWorldPersistentState.getQuantumState(server).addWorldData(worldData)
+            QuantumPersistentState.getQuantumState(server).addWorldData(worldData)
 
         return world
     }
@@ -64,7 +62,7 @@ object QuantumManager {
     }
 
     fun loadExistingWorlds(server: MinecraftServer) {
-        val state = QuantumWorldPersistentState.getQuantumState(server)
+        val state = QuantumPersistentState.getQuantumState(server)
 
         for (world in state.getWorlds()) {
             if (!world.enabled)

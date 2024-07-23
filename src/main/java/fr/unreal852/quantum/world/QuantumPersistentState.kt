@@ -8,7 +8,7 @@ import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.PersistentState
 
-class QuantumWorldPersistentState : PersistentState() {
+class QuantumPersistentState : PersistentState() {
 
     private val worlds: MutableList<QuantumWorldData> = ArrayList()
 
@@ -43,26 +43,26 @@ class QuantumWorldPersistentState : PersistentState() {
         private const val WORLDS_NBT_KEY = Quantum.MOD_ID + ":worlds"
 
         private val PersistentStateTypeLoader = Type(
-            { QuantumWorldPersistentState() },
+            { QuantumPersistentState() },
             { nbt: NbtCompound, registryLookup: WrapperLookup? -> fromNbt(nbt, registryLookup) },
             null
         )
 
-        fun getQuantumState(server: MinecraftServer): QuantumWorldPersistentState {
+        fun getQuantumState(server: MinecraftServer): QuantumPersistentState {
             val stateManager = server.overworld.persistentStateManager
             val quantumState = stateManager.getOrCreate(PersistentStateTypeLoader, DATA_KEY)
             quantumState.markDirty()
             return quantumState
         }
 
-        fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup?): QuantumWorldPersistentState {
-            val quantumWorldPersistentState = QuantumWorldPersistentState()
+        fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup?): QuantumPersistentState {
+            val quantumPersistentState = QuantumPersistentState()
             val worldsNbtList = nbt.getList(WORLDS_NBT_KEY, 10) // 10 is the NbtCompound type
             for (i in worldsNbtList.indices) {
                 val entryNbt = worldsNbtList.getCompound(i)
-                quantumWorldPersistentState.worlds.add(fromNbt(entryNbt))
+                quantumPersistentState.worlds.add(fromNbt(entryNbt))
             }
-            return quantumWorldPersistentState
+            return quantumPersistentState
         }
     }
 }

@@ -7,7 +7,7 @@ import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.QuantumManager.getWorld
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
 import fr.unreal852.quantum.utils.TextUtils
-import fr.unreal852.quantum.world.QuantumWorldPersistentState
+import fr.unreal852.quantum.world.QuantumPersistentState
 import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.server.command.CommandManager
@@ -36,7 +36,7 @@ class DeleteWorldCommand : Command<ServerCommandSource> {
 
                 val fantasy = Fantasy.get(server)
                 if (fantasy.tickDeleteWorld(quantumWorld.serverWorld)) {
-                    val state = QuantumWorldPersistentState.getQuantumState(server)
+                    val state = QuantumPersistentState.getQuantumState(server)
                     state.removeWorldData(quantumWorld.worldData)
                     context.source!!.sendMessage(TextUtils.literal("World '$worldName' deleted!", Formatting.GREEN))
                 }
