@@ -16,6 +16,7 @@ object CommandRegistration {
             CreateWorldCommand.register(dispatcher)
             DeleteWorldCommand.register(dispatcher)
             TeleportWorldCommand.register(dispatcher)
+            SetWorldSpawnCommand.register(dispatcher)
         })
     }
 }

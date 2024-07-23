@@ -12,10 +12,8 @@ class PlayerRespawnHandler : AfterRespawn {
 
     override fun afterRespawn(oldPlayer: ServerPlayerEntity, newPlayer: ServerPlayerEntity, alive: Boolean) {
 
-        val centeredPos = newPlayer.world.spawnPos.toBottomCenterPos()
-
         val playerPositionPacket = PlayerPositionLookS2CPacket(
-            centeredPos.x, centeredPos.y, centeredPos.z,
+            newPlayer.x, newPlayer.y, newPlayer.z,
             newPlayer.world.spawnAngle, 0f, PositionFlag.ROT, 0
         )
 

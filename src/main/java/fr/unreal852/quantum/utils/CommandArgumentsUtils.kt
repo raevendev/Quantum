@@ -1,5 +1,6 @@
 ﻿package fr.unreal852.quantum.utils
 
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import net.minecraft.command.argument.ColorArgumentType
@@ -13,6 +14,14 @@ object CommandArgumentsUtils {
     fun getStringArgument(context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: String): String {
         return try {
             StringArgumentType.getString(context, argumentName)
+        } catch (e: IllegalArgumentException) {
+            defaultValue
+        }
+    }
+
+    fun getIntArgument(context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: Int): Int {
+        return try {
+            IntegerArgumentType.getInteger(context, argumentName)
         } catch (e: IllegalArgumentException) {
             defaultValue
         }
