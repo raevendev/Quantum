@@ -4,6 +4,9 @@ package fr.unreal852.quantum.utils
 
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
@@ -23,5 +26,9 @@ object Extensions {
     fun PlayerEntity.teleportTo(targetWorld: ServerWorld, pos: Vec3d, yaw: Float, pitch: Float) {
         val teleportTarget = TeleportTarget(targetWorld, pos, Vec3d.ZERO, yaw, pitch, false) {}
         this.teleportTo(teleportTarget)
+    }
+
+    fun MinecraftServer.getWorldByIdentifier(identifier: Identifier): ServerWorld? {
+        return this.getWorld(RegistryKey.of(RegistryKeys.WORLD, identifier))
     }
 }

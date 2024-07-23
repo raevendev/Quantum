@@ -1,5 +1,6 @@
 package fr.unreal852.quantum
 
+import fr.unreal852.quantum.utils.Extensions.getWorldByIdentifier
 import fr.unreal852.quantum.world.QuantumWorld
 import fr.unreal852.quantum.world.QuantumWorldData
 import fr.unreal852.quantum.world.QuantumWorldPersistentState
@@ -46,7 +47,7 @@ object QuantumManager {
             return worldData.runtimeWorldConfig
 
         val runtimeWorldConfig = RuntimeWorldConfig()
-        val serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldData.dimensionId))
+        val serverWorld = server.getWorldByIdentifier(worldData.worldId)
 
         if (serverWorld != null) {
             runtimeWorldConfig.setDimensionType(serverWorld.dimensionEntry).setGenerator(serverWorld.chunkManager.chunkGenerator)
