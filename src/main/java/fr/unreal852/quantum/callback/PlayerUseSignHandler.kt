@@ -1,6 +1,7 @@
 ﻿package fr.unreal852.quantum.callback
 
 import fr.unreal852.quantum.utils.Extensions.teleportTo
+import fr.unreal852.quantum.utils.Extensions.teleportToWorld
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.block.SignBlock
 import net.minecraft.block.WallSignBlock
@@ -31,12 +32,18 @@ class PlayerUseSignHandler : UseBlockCallback {
 
         if (signEntity is SignBlockEntity) {
 
-            val text = signEntity.backText.getMessage(0, false).string
-            val identifier = Identifier.of(text)
+            val firstLine = signEntity.backText.getMessage(0, false).string
+            if (!firstLine.equals("teleport", true))
+                return ActionResult.PASS
+            val secondLine = signEntity.backText.getMessage(1, false).string
+            val thirdLine = signEntity.backText.getMessage(2, false).string
+            if (secondLine.isNullOrEmpty() && thirdLine.isNullOrEmpty())
+                return ActionResult.PASS
+            val identifier = Identifier.of(secondLine, thirdLine)
             val targetWorld = world.server?.getWorld(RegistryKey.of(RegistryKeys.WORLD, identifier))
 
             if (targetWorld is ServerWorld) {
-                player.teleportTo(targetWorld, targetWorld.spawnPos.toBottomCenterPos())
+                player.teleportToWorld(targetWorld)
                 return ActionResult.SUCCESS
             }
         }
