@@ -7,7 +7,7 @@ import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.QuantumManager.getWorld
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
 import fr.unreal852.quantum.utils.TextUtils
-import fr.unreal852.quantum.world.QuantumPersistentState
+import fr.unreal852.quantum.world.states.QuantumPersistentState
 import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.server.command.CommandManager

@@ -5,7 +5,7 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
-import fr.unreal852.quantum.utils.Extensions.teleportTo
+import fr.unreal852.quantum.utils.Extensions.teleportToWorld
 import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.entity.player.PlayerEntity
@@ -28,13 +28,13 @@ class TeleportWorldCommand : Command<ServerCommandSource> {
                 }
 
                 val worldName = IdentifierArgumentType.getIdentifier(context, "world")
-                val world = context.source!!.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldName))
+                val world = context.source.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldName))
                 if (world == null) {
-                    context.source!!.sendError(Text.literal("The specified world '$worldName' doesn't exist."))
+                    context.source.sendError(Text.literal("The specified world '$worldName' doesn't exist."))
                     return 0
                 }
 
-                player.teleportTo(world, world.spawnPos.toBottomCenterPos())
+                player.teleportToWorld(world)
             } catch (e: Exception) {
                 Quantum.LOGGER.error("An error occurred while teleporting the player.", e)
             }

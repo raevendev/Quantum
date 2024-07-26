@@ -1,6 +1,7 @@
-package fr.unreal852.quantum.world
+package fr.unreal852.quantum.world.states
 
 import fr.unreal852.quantum.Quantum
+import fr.unreal852.quantum.world.QuantumWorldData
 import fr.unreal852.quantum.world.QuantumWorldData.Companion.fromNbt
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
@@ -40,11 +41,11 @@ class QuantumPersistentState : PersistentState() {
     companion object {
 
         private const val DATA_KEY = Quantum.MOD_ID
-        private const val WORLDS_NBT_KEY = Quantum.MOD_ID + ":worlds"
+        private const val WORLDS_NBT_KEY = "${Quantum.MOD_ID}:worlds"
 
         private val PersistentStateTypeLoader = Type(
             { QuantumPersistentState() },
-            { nbt: NbtCompound, registryLookup: WrapperLookup? -> fromNbt(nbt, registryLookup) },
+            { nbt: NbtCompound, registryLookup: WrapperLookup -> fromNbt(nbt, registryLookup) },
             null
         )
 
@@ -56,7 +57,7 @@ class QuantumPersistentState : PersistentState() {
         }
 
         @Suppress("UNUSED_PARAMETER")
-        fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup?): QuantumPersistentState {
+        fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup): QuantumPersistentState {
             val quantumPersistentState = QuantumPersistentState()
             val worldsNbtList = nbt.getList(WORLDS_NBT_KEY, 10) // 10 is the NbtCompound type
             for (i in worldsNbtList.indices) {

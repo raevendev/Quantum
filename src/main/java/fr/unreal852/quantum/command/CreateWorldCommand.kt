@@ -23,7 +23,6 @@ import net.minecraft.world.Difficulty
 import net.minecraft.world.World
 import net.minecraft.world.dimension.DimensionTypes
 import xyz.nucleoid.fantasy.RuntimeWorldConfig
-import java.util.*
 import kotlin.random.Random
 
 class CreateWorldCommand : Command<ServerCommandSource> {

@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.utils.CommandArgumentsUtils
+import fr.unreal852.quantum.utils.Extensions.setCustomSpawnPos
 import fr.unreal852.quantum.utils.TextUtils
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.command.CommandManager
@@ -30,10 +31,13 @@ class SetWorldSpawnCommand : Command<ServerCommandSource> {
 
                 if (world is ServerWorld) {
                     val radius = CommandArgumentsUtils.getIntArgument(context, "spawnRadius", -1)
-                    Quantum.LOGGER.info("Radius: ${radius}")
+                    Quantum.LOGGER.info("Radius: $radius")
+
                     if (radius >= 0)
                         world.gameRules.get(GameRules.SPAWN_RADIUS).set(radius, context.source.server)
-                    world.setSpawnPos(BlockPos(player.pos.x.toInt(), player.pos.y.toInt(), player.pos.z.toInt()), player.yaw)
+
+                    world.setCustomSpawnPos(BlockPos(player.pos.x.toInt(), player.pos.y.toInt(), player.pos.z.toInt()), player.yaw, player.pitch)
+
                     val spawnPos = world.spawnPos
                     player.sendMessage(
                         TextUtils.literal(

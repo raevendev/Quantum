@@ -3,7 +3,7 @@ package fr.unreal852.quantum
 import fr.unreal852.quantum.utils.Extensions.getWorldByIdentifier
 import fr.unreal852.quantum.world.QuantumWorld
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.world.QuantumPersistentState
+import fr.unreal852.quantum.world.states.QuantumPersistentState
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import net.minecraft.world.GameRules
