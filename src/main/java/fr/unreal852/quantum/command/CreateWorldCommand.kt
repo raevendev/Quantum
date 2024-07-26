@@ -24,17 +24,20 @@ import net.minecraft.world.World
 import net.minecraft.world.dimension.DimensionTypes
 import xyz.nucleoid.fantasy.RuntimeWorldConfig
 import java.util.*
+import kotlin.random.Random
 
 class CreateWorldCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
-        if (context.source == null) return 0
+        if (context.source == null)
+            return 0
         else {
             try {
-                val server = context.source!!.server
-                val worldName = StringArgumentType.getString(context, "worldName").lowercase(Locale.getDefault())
+
+                val server = context.source.server
+                val worldName = StringArgumentType.getString(context, "worldName").lowercase()
 
                 if (getWorld(worldName) != null) {
-                    context.source!!.sendError(TextUtils.literal("A world with the same name already exists.", Formatting.WHITE))
+                    context.source.sendError(TextUtils.literal("A world with the same name already exists.", Formatting.WHITE))
                     return 1
                 }
 
@@ -43,15 +46,12 @@ class CreateWorldCommand : Command<ServerCommandSource> {
 
                 val difficulty = CommandArgumentsUtils.getEnumArgument(Difficulty::class.java, context, "worldDifficulty", server.saveProperties.difficulty)
                 val dimensionTypeIdentifier = CommandArgumentsUtils.getIdentifierArgument(context, "worldDimension", DimensionTypes.OVERWORLD_ID)
-                val seed = CommandArgumentsUtils.getSeedArgument(context, "worldSeed", (Random()).nextLong())
+                val seed = CommandArgumentsUtils.getSeedArgument(context, "worldSeed", Random.nextLong())
                 var serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, dimensionTypeIdentifier))
 
                 if (serverWorld == null) {
                     serverWorld = server.getWorld(World.OVERWORLD)
-                    Quantum.LOGGER.warn(
-                        "No world found for '{}'. Defaulting to minecraft:overworld",
-                        dimensionTypeIdentifier.toString()
-                    )
+                    Quantum.LOGGER.warn("No world found for '{}'. Defaulting to minecraft:overworld", dimensionTypeIdentifier.toString())
                 }
 
                 worldConfig.setDifficulty(difficulty)
@@ -60,7 +60,7 @@ class CreateWorldCommand : Command<ServerCommandSource> {
                 worldConfig.setSeed(seed)
 
                 getOrOpenPersistentWorld(server, QuantumWorldData(worldIdentifier, dimensionTypeIdentifier, worldConfig), true)
-                context.source!!.sendMessage(TextUtils.literal("World '$worldName' created!", Formatting.WHITE))
+                context.source.sendMessage(TextUtils.literal("World '$worldName' created!", Formatting.WHITE))
             } catch (e: Exception) {
                 Quantum.LOGGER.error("An error occurred while creating the world.", e)
             }

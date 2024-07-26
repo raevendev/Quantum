@@ -26,11 +26,7 @@ class DeleteWorldCommand : Command<ServerCommandSource> {
 
                 if (quantumWorld == null) {
                     context.source!!.sendError(
-                        TextUtils.literal(
-                            "The specified world doesn't exists or has not been created using Quantum.",
-                            Formatting.RED
-                        )
-                    )
+                        TextUtils.literal("The specified world doesn't exists or has not been created using Quantum.", Formatting.RED))
                     return 1
                 }
 
