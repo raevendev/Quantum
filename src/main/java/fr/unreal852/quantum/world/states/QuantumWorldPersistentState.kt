@@ -32,7 +32,7 @@ class QuantumWorldPersistentState : PersistentState() {
 
     companion object {
 
-        private const val DATA_KEY = "${Quantum.MOD_ID}worlds"
+        private const val DATA_KEY = "${Quantum.MOD_ID}:world"
         private const val SPAWN_NBT_KEY = "${Quantum.MOD_ID}:spawnpos"
         private const val SPAWN_YAW_NBT_KEY = "${Quantum.MOD_ID}:spawnposyaw"
         private const val SPAWN_PITCH_NBT_KEY = "${Quantum.MOD_ID}:spawnpospitch"
