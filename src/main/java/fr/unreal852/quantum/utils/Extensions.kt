@@ -10,10 +10,8 @@ import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.TeleportTarget
-import net.minecraft.world.World
 
 object Extensions {
 
@@ -24,10 +22,8 @@ object Extensions {
     fun PlayerEntity.teleportToWorld(targetWorld: ServerWorld) {
         val worldState = QuantumWorldPersistentState.getWorldState(targetWorld)
         val teleportTarget = TeleportTarget(
-            targetWorld,
-            if (targetWorld.registryKey == World.OVERWORLD) targetWorld.spawnPos.toBottomCenterPos()
-            else worldState.worldSpawn.toBottomCenterPos(),
-            Vec3d.ZERO, worldState.worldSpawnYaw, worldState.worldSpawnPitch, false
+            targetWorld, worldState.worldSpawnPos,
+            Vec3d.ZERO, worldState.worldSpawnAngle.x, worldState.worldSpawnAngle.y, false
         ) {}
         this.teleportTo(teleportTarget)
     }
@@ -46,11 +42,7 @@ object Extensions {
         return this.getWorld(RegistryKey.of(RegistryKeys.WORLD, identifier))
     }
 
-    fun ServerWorld.setCustomSpawnPos(pos: BlockPos, yaw: Float, pitch: Float) {
-        if (this.registryKey == World.OVERWORLD) { // For the overworld lets use the default ones
-            this.setSpawnPos(pos, yaw)
-            return
-        }
+    fun ServerWorld.setCustomSpawnPos(pos: Vec3d, yaw: Float, pitch: Float) {
         val worldState = QuantumWorldPersistentState.getWorldState(this)
         worldState.setWorldSpawn(pos, yaw, pitch)
     }
