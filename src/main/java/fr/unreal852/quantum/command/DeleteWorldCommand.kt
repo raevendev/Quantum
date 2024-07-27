@@ -20,7 +20,6 @@ class DeleteWorldCommand : Command<ServerCommandSource> {
 
         try {
 
-            val server = context.source.server
             val worldName = IdentifierArgumentType.getIdentifier(context, WORLD_NAME_ARG)
 
             if (!QuantumManager.worldExists(worldName)) {
