@@ -5,16 +5,16 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
-import fr.unreal852.quantum.utils.CommandArgumentsUtils
-import fr.unreal852.quantum.utils.Extensions.setCustomSpawnPos
 import fr.unreal852.quantum.utils.TextUtils
+import net.minecraft.block.SignBlock
+import net.minecraft.block.WallSignBlock
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Formatting
-import net.minecraft.world.GameRules
+import net.minecraft.world.RaycastContext
 
-class SetWorldSpawnCommand : Command<ServerCommandSource> {
+class SetTeleportSignCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
         if (context.source == null) {
             return 0
@@ -28,23 +28,27 @@ class SetWorldSpawnCommand : Command<ServerCommandSource> {
                 val world = player.world
 
                 if (world is ServerWorld) {
-                    val radius = CommandArgumentsUtils.getIntArgument(context, "spawnRadius", -1)
 
-                    if (radius >= 0)
-                        world.gameRules.get(GameRules.SPAWN_RADIUS).set(radius, context.source.server)
-
-                    world.setCustomSpawnPos(player.pos, player.yaw, player.pitch)
-
-                    player.sendMessage(
-                        TextUtils.literal(
-                            "World spawn set successful -> x=${player.x}, y=${player.y}, z=${player.z}\nAngle: ${player.spawnAngle}°",
-                            Formatting.GREEN
-                        )
+                    val raycastContext = RaycastContext(
+                        player.eyePos,
+                        player.eyePos.add(player.rotationVecClient.multiply(200.0)),
+                        RaycastContext.ShapeType.OUTLINE,
+                        RaycastContext.FluidHandling.NONE,
+                        player
                     )
+
+                    val hitResult = world.raycast(raycastContext)
+                    val blockState = world.getBlockState(hitResult.blockPos)
+                    Quantum.LOGGER.info(blockState.block.name.toString())
+                    if (blockState.block !is SignBlock && blockState.block !is WallSignBlock) {
+                        context.source.sendMessage(TextUtils.literal("You must look at a sign block", Formatting.RED))
+                        return 0
+                    }
+
                 }
 
             } catch (e: Exception) {
-                Quantum.LOGGER.error("An error occurred while setting the world spawn.", e)
+                Quantum.LOGGER.error("An error occurred while teleporting the player.", e)
             }
 
             return 1
@@ -57,11 +61,12 @@ class SetWorldSpawnCommand : Command<ServerCommandSource> {
                 CommandManager.literal("qt")
                     .requires { commandSource: ServerCommandSource -> commandSource.hasPermissionLevel(4) }
                     .then(
-                        CommandManager.literal("setSpawn")
+                        CommandManager.literal("setdestination")
                             .then(
-                                CommandManager.argument("spawnRadius", IntegerArgumentType.integer(0)).executes(SetWorldSpawnCommand())
+                                CommandManager.argument("spawnRadius", IntegerArgumentType.integer(0))
+                                    .executes(SetTeleportSignCommand())
                             )
-                            .executes(SetWorldSpawnCommand())
+                            .executes(SetTeleportSignCommand())
                     ))
         }
     }

@@ -37,7 +37,7 @@ class DeleteWorldCommand : Command<ServerCommandSource> {
                     context.source!!.sendMessage(TextUtils.literal("World '$worldName' deleted!", Formatting.GREEN))
                 }
             } catch (e: Exception) {
-                Quantum.LOGGER.error("An error occurred while creating the world.", e)
+                Quantum.LOGGER.error("An error occurred while deleting the world.", e)
             }
 
             return 1

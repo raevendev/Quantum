@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture
 class ItemsSuggestionProvider : SuggestionProvider<ServerCommandSource?> {
     override fun getSuggestions(context: CommandContext<ServerCommandSource?>, builder: SuggestionsBuilder): CompletableFuture<Suggestions> {
         for (item in Registries.ITEM) {
-            if (item !== Items.AIR && item !is BlockItem) {
+            if (item != Items.AIR && item !is BlockItem) {
                 builder.suggest(item.toString())
             }
         }

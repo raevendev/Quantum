@@ -10,9 +10,8 @@ import java.util.concurrent.CompletableFuture
 
 class DifficultySuggestionProvider : SuggestionProvider<ServerCommandSource?> {
     override fun getSuggestions(context: CommandContext<ServerCommandSource?>, builder: SuggestionsBuilder): CompletableFuture<Suggestions> {
-        val difficulties = Difficulty.entries.toTypedArray()
 
-        for (difficulty in difficulties) {
+        for (difficulty in Difficulty.entries) {
             builder.suggest(difficulty.name)
         }
 

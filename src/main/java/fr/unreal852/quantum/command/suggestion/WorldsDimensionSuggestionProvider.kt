@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture
 
 class WorldsDimensionSuggestionProvider : SuggestionProvider<ServerCommandSource> {
     override fun getSuggestions(context: CommandContext<ServerCommandSource>, builder: SuggestionsBuilder): CompletableFuture<Suggestions> {
+
         for (world in context.source.worldKeys) {
             builder.suggest(world.value.toString())
         }

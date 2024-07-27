@@ -9,12 +9,12 @@ import net.minecraft.registry.Registries
 import net.minecraft.server.command.ServerCommandSource
 import java.util.concurrent.CompletableFuture
 
-class BlocksSuggestionProvider : SuggestionProvider<ServerCommandSource?> {
-    override fun getSuggestions(context: CommandContext<ServerCommandSource?>, builder: SuggestionsBuilder): CompletableFuture<Suggestions> {
+class BlocksSuggestionProvider : SuggestionProvider<ServerCommandSource> {
+    override fun getSuggestions(context: CommandContext<ServerCommandSource>, builder: SuggestionsBuilder): CompletableFuture<Suggestions> {
         for (block in Registries.BLOCK) {
             val blockState = block.defaultState
 
-            if (block !== Blocks.AIR) {
+            if (block != Blocks.AIR) {
                 builder.suggest(Registries.BLOCK.getEntry(block).idAsString)
             }
         }
