@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package fr.unreal852.quantum
 
 import fr.unreal852.quantum.utils.Extensions.getWorldByIdentifier
