@@ -25,57 +25,63 @@ class SetTeleportSignCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
         if (context.source == null) {
             return 0
-        } else {
-            try {
-                val player = context.source.player
-                if (player == null || player.world == null) {
+        }
+
+        try {
+            val player = context.source.player
+            if (player == null || player.world == null) {
+                return 0
+            }
+
+            val world = player.world
+
+            if (world is ServerWorld) {
+
+                val raycastContext = RaycastContext(
+                    player.eyePos,
+                    player.eyePos.add(player.rotationVecClient.multiply(20.0)),
+                    RaycastContext.ShapeType.OUTLINE,
+                    RaycastContext.FluidHandling.NONE,
+                    player
+                )
+
+                val hitResult = world.raycast(raycastContext)
+                val blockState = world.getBlockState(hitResult.blockPos)
+
+                if (blockState.block !is SignBlock && blockState.block !is WallSignBlock) {
+                    context.source.sendMessage(TextUtils.literal("You must look at a sign block", Formatting.RED))
                     return 0
                 }
 
-                val world = player.world
+                val worldIdentifier = IdentifierArgumentType.getIdentifier(context, "world")
+                val serverWorld = context.source.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldIdentifier))
 
-                if (world is ServerWorld) {
-
-                    val raycastContext = RaycastContext(
-                        player.eyePos,
-                        player.eyePos.add(player.rotationVecClient.multiply(20.0)),
-                        RaycastContext.ShapeType.OUTLINE,
-                        RaycastContext.FluidHandling.NONE,
-                        player
-                    )
-
-                    val hitResult = world.raycast(raycastContext)
-                    val blockState = world.getBlockState(hitResult.blockPos)
-
-                    if (blockState.block !is SignBlock && blockState.block !is WallSignBlock) {
-                        context.source.sendMessage(TextUtils.literal("You must look at a sign block", Formatting.RED))
-                        return 0
-                    }
-
-                    val worldName = IdentifierArgumentType.getIdentifier(context, "world")
-                    val world = context.source.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldName))
-
-                    if (world == null) {
-                        context.source.sendMessage(TextUtils.literal("No world found with id '$worldName'", Formatting.RED))
-                        return 0
-                    }
-
-                    val signEntity = world.getBlockEntity(hitResult.blockPos) as SignBlockEntity? ?: return 0
-
-                    signEntity.changeText({
-                        SignText()
-                            .withMessage(0, Text.literal("teleport"))
-                            .withMessage(1, Text.literal(worldName.namespace))
-                            .withMessage(2, Text.literal(worldName.path))
-                    }, false)
+                if (serverWorld == null) {
+                    context.source.sendMessage(TextUtils.literal("No world found with id '$worldIdentifier'", Formatting.RED))
+                    return 0
                 }
 
-            } catch (e: Exception) {
-                Quantum.LOGGER.error("An error occurred while teleporting the player.", e)
+                val signEntity = serverWorld.getBlockEntity(hitResult.blockPos) as SignBlockEntity? ?: return 0
+
+                if (signEntity.changeText({
+                        SignText()
+                            .withMessage(0, Text.literal("teleport"))
+                            .withMessage(1, Text.literal(worldIdentifier.namespace))
+                            .withMessage(2, Text.literal(worldIdentifier.path))
+                    }, false)) {
+                    context.source.sendMessage(TextUtils.literal("Failed to set sign destination '$worldIdentifier'", Formatting.RED))
+                    return 0
+                }
+
+                context.source.sendMessage(TextUtils.literal("Destination set to '$worldIdentifier'", Formatting.GREEN))
+
             }
 
-            return 1
+        } catch (e: Exception) {
+            Quantum.LOGGER.error("An error occurred while teleporting the player.", e)
         }
+
+        return 1
     }
 
     companion object {

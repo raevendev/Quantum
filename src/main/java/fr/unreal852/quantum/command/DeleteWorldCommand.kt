@@ -18,30 +18,29 @@ import xyz.nucleoid.fantasy.Fantasy
 class DeleteWorldCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
         if (context.source == null) return 0
-        else {
-            try {
-                val server = context.source!!.server
-                val worldName = IdentifierArgumentType.getIdentifier(context, "worldName")
-                val quantumWorld = getWorld(worldName)
 
-                if (quantumWorld == null) {
-                    context.source!!.sendError(
-                        TextUtils.literal("The specified world doesn't exists or has not been created using Quantum.", Formatting.RED))
-                    return 1
-                }
+        try {
+            val server = context.source!!.server
+            val worldName = IdentifierArgumentType.getIdentifier(context, "worldName")
+            val quantumWorld = getWorld(worldName)
 
-                val fantasy = Fantasy.get(server)
-                if (fantasy.tickDeleteWorld(quantumWorld.serverWorld)) {
-                    val state = QuantumPersistentState.getQuantumState(server)
-                    state.removeWorldData(quantumWorld.worldData)
-                    context.source!!.sendMessage(TextUtils.literal("World '$worldName' deleted!", Formatting.GREEN))
-                }
-            } catch (e: Exception) {
-                Quantum.LOGGER.error("An error occurred while deleting the world.", e)
+            if (quantumWorld == null) {
+                context.source!!.sendError(
+                    TextUtils.literal("The specified world doesn't exists or has not been created using Quantum.", Formatting.RED))
+                return 1
             }
 
-            return 1
+            val fantasy = Fantasy.get(server)
+            if (fantasy.tickDeleteWorld(quantumWorld.serverWorld)) {
+                val state = QuantumPersistentState.getQuantumState(server)
+                state.removeWorldData(quantumWorld.worldData)
+                context.source!!.sendMessage(TextUtils.literal("World '$worldName' deleted!", Formatting.GREEN))
+            }
+        } catch (e: Exception) {
+            Quantum.LOGGER.error("An error occurred while deleting the world.", e)
         }
+
+        return 1
     }
 
     companion object {

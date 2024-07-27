@@ -18,37 +18,37 @@ class SetWorldSpawnCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
         if (context.source == null) {
             return 0
-        } else {
-            try {
-                val player = context.source.player
-                if (player == null || player.world == null) {
-                    return 0
-                }
+        }
 
-                val world = player.world
-
-                if (world is ServerWorld) {
-                    val radius = CommandArgumentsUtils.getIntArgument(context, "spawnRadius", -1)
-
-                    if (radius >= 0)
-                        world.gameRules.get(GameRules.SPAWN_RADIUS).set(radius, context.source.server)
-
-                    world.setCustomSpawnPos(player.pos, player.yaw, player.pitch)
-
-                    player.sendMessage(
-                        TextUtils.literal(
-                            "World spawn set successful -> x=${player.x}, y=${player.y}, z=${player.z}\nAngle: ${player.spawnAngle}°",
-                            Formatting.GREEN
-                        )
-                    )
-                }
-
-            } catch (e: Exception) {
-                Quantum.LOGGER.error("An error occurred while setting the world spawn.", e)
+        try {
+            val player = context.source.player
+            if (player == null || player.world == null) {
+                return 0
             }
 
-            return 1
+            val world = player.world
+
+            if (world is ServerWorld) {
+                val radius = CommandArgumentsUtils.getIntArgument(context, "spawnRadius", -1)
+
+                if (radius >= 0)
+                    world.gameRules.get(GameRules.SPAWN_RADIUS).set(radius, context.source.server)
+
+                world.setCustomSpawnPos(player.pos, player.yaw, player.pitch)
+
+                player.sendMessage(
+                    TextUtils.literal(
+                        "World spawn set successful -> x=${player.x}, y=${player.y}, z=${player.z}\nAngle: ${player.spawnAngle}°",
+                        Formatting.GREEN
+                    )
+                )
+            }
+
+        } catch (e: Exception) {
+            Quantum.LOGGER.error("An error occurred while setting the world spawn.", e)
         }
+
+        return 1
     }
 
     companion object {
