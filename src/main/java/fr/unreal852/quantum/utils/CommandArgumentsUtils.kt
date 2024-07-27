@@ -1,4 +1,6 @@
-﻿package fr.unreal852.quantum.utils
+﻿@file:Suppress("unused")
+
+package fr.unreal852.quantum.utils
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
