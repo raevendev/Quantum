@@ -18,8 +18,8 @@ object QuantumManager {
         return WORLDS[identifier]
     }
 
-    fun getWorld(worldName: String): QuantumWorld? {
-        return getWorld(Identifier.of("quantum", worldName))
+    fun worldExists(identifier: Identifier): Boolean {
+        return WORLDS.containsKey(identifier)
     }
 
     fun getOrOpenPersistentWorld(server: MinecraftServer, worldData: QuantumWorldData, saveToDisk: Boolean): QuantumWorld? {
@@ -59,6 +59,21 @@ object QuantumManager {
         runtimeWorldConfig.setGameRule(GameRules.DO_DAYLIGHT_CYCLE, true)
 
         return runtimeWorldConfig
+    }
+
+    fun deleteWorld(identifier: Identifier): Boolean {
+        val world = WORLDS.getOrDefault(identifier, null) ?: return false
+        val server = world.serverWorld.server
+        val fantasy = Fantasy.get(world.serverWorld.server)
+
+        if (!fantasy.tickDeleteWorld(world.serverWorld))
+            return false
+
+        val state = QuantumPersistentState.getQuantumState(server)
+        state.removeWorldData(world.worldData)
+        WORLDS.remove(identifier)
+
+        return true
     }
 
     fun loadExistingWorlds(server: MinecraftServer) {
