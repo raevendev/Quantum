@@ -35,7 +35,7 @@ object CommandArgumentsUtils {
         }
     }
 
-    fun <T : Enum<T>> getEnumArgument(enumClass: Class<T>, context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: T): T {
+    fun <T : Enum<T>> getEnumArgument(context: CommandContext<ServerCommandSource>, argumentName: String, enumClass: Class<T>, defaultValue: T): T {
         return try {
             enumClass.enumConstants.first { it.name == StringArgumentType.getString(context, argumentName) }
         } catch (e: IllegalArgumentException) {
