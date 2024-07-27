@@ -4,37 +4,32 @@ import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
-import fr.unreal852.quantum.QuantumManager.getWorld
+import fr.unreal852.quantum.QuantumManager
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
-import fr.unreal852.quantum.utils.TextUtils
-import fr.unreal852.quantum.world.states.QuantumPersistentState
 import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.util.Formatting
-import xyz.nucleoid.fantasy.Fantasy
+import net.minecraft.text.Text
 
 class DeleteWorldCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
-        if (context.source == null) return 0
+
+        if (context.source == null)
+            return 0
 
         try {
-            val server = context.source!!.server
-            val worldName = IdentifierArgumentType.getIdentifier(context, "worldName")
-            val quantumWorld = getWorld(worldName)
 
-            if (quantumWorld == null) {
-                context.source!!.sendError(
-                    TextUtils.literal("The specified world doesn't exists or has not been created using Quantum.", Formatting.RED))
-                return 1
+            val server = context.source.server
+            val worldName = IdentifierArgumentType.getIdentifier(context, WORLD_NAME_ARG)
+
+            if (!QuantumManager.worldExists(worldName)) {
+                context.source.sendError(Text.translatable("quantum.text.cmd.world.notexists.unspecified"))
+                return 0
             }
 
-            val fantasy = Fantasy.get(server)
-            if (fantasy.tickDeleteWorld(quantumWorld.serverWorld)) {
-                val state = QuantumPersistentState.getQuantumState(server)
-                state.removeWorldData(quantumWorld.worldData)
-                context.source!!.sendMessage(TextUtils.literal("World '$worldName' deleted!", Formatting.GREEN))
+            if (QuantumManager.deleteWorld(worldName)) {
+                context.source.sendMessage(Text.translatable("quantum.text.cmd.world.deleted", worldName.toString()))
             }
         } catch (e: Exception) {
             Quantum.LOGGER.error("An error occurred while deleting the world.", e)
@@ -44,17 +39,18 @@ class DeleteWorldCommand : Command<ServerCommandSource> {
     }
 
     companion object {
+
+        private const val WORLD_NAME_ARG = "worldName"
+
         fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             dispatcher.register(CommandManager.literal("qt")
-                .then(CommandManager.literal("delete")
+                .then(CommandManager.literal("deleteworld")
                     .requires { commandSource: ServerCommandSource -> commandSource.hasPermissionLevel(4) }
                     .then(
-                        CommandManager.literal("world")
-                            .then(
-                                CommandManager.argument("worldName", DimensionArgumentType.dimension())
-                                    .suggests(WorldsDimensionSuggestionProvider())
-                                    .executes(DeleteWorldCommand())
-                            )
+                        CommandManager.argument(WORLD_NAME_ARG, DimensionArgumentType.dimension())
+                            .suggests(WorldsDimensionSuggestionProvider())
+                            .executes(DeleteWorldCommand())
+
                     )
                 )
             )

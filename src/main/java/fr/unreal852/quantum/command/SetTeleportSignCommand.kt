@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
-import fr.unreal852.quantum.utils.TextUtils
 import net.minecraft.block.SignBlock
 import net.minecraft.block.WallSignBlock
 import net.minecraft.block.entity.SignBlockEntity
@@ -18,11 +17,11 @@ import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.world.RaycastContext
 
 class SetTeleportSignCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
+
         if (context.source == null) {
             return 0
         }
@@ -37,44 +36,43 @@ class SetTeleportSignCommand : Command<ServerCommandSource> {
 
             if (world is ServerWorld) {
 
-                val raycastContext = RaycastContext(
+                val rayContext = RaycastContext(
                     player.eyePos,
-                    player.eyePos.add(player.rotationVecClient.multiply(20.0)),
+                    player.eyePos.add(player.rotationVecClient.multiply(200.0)),
                     RaycastContext.ShapeType.OUTLINE,
                     RaycastContext.FluidHandling.NONE,
                     player
                 )
 
-                val hitResult = world.raycast(raycastContext)
+                val hitResult = world.raycast(rayContext)
                 val blockState = world.getBlockState(hitResult.blockPos)
 
                 if (blockState.block !is SignBlock && blockState.block !is WallSignBlock) {
-                    context.source.sendMessage(TextUtils.literal("You must look at a sign block", Formatting.RED))
+                    context.source.sendError(Text.translatable("quantum.text.cmd.sign.lookat"))
                     return 0
                 }
 
-                val worldIdentifier = IdentifierArgumentType.getIdentifier(context, "world")
+                val worldIdentifier = IdentifierArgumentType.getIdentifier(context, WORLD_IDENTIFIER_ARG)
                 val serverWorld = context.source.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldIdentifier))
 
                 if (serverWorld == null) {
-                    context.source.sendMessage(TextUtils.literal("No world found with id '$worldIdentifier'", Formatting.RED))
+                    context.source.sendError(Text.translatable("quantum.text.cmd.world.notexists", worldIdentifier.toString()))
                     return 0
                 }
 
-                val signEntity = serverWorld.getBlockEntity(hitResult.blockPos) as SignBlockEntity? ?: return 0
+                val signEntity = world.getBlockEntity(hitResult.blockPos) as SignBlockEntity? ?: return 0
 
-                if (signEntity.changeText({
+                if (!signEntity.changeText({
                         SignText()
                             .withMessage(0, Text.literal("teleport"))
                             .withMessage(1, Text.literal(worldIdentifier.namespace))
                             .withMessage(2, Text.literal(worldIdentifier.path))
                     }, false)) {
-                    context.source.sendMessage(TextUtils.literal("Failed to set sign destination '$worldIdentifier'", Formatting.RED))
+                    context.source.sendError(Text.translatable("quantum.text.cmd.sign.failed"))
                     return 0
                 }
 
-                context.source.sendMessage(TextUtils.literal("Destination set to '$worldIdentifier'", Formatting.GREEN))
-
+                context.source.sendMessage(Text.translatable("quantum.text.cmd.sign.success", worldIdentifier.toString()))
             }
 
         } catch (e: Exception) {
@@ -85,6 +83,9 @@ class SetTeleportSignCommand : Command<ServerCommandSource> {
     }
 
     companion object {
+
+        private const val WORLD_IDENTIFIER_ARG = "worldIdentifier"
+
         fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             dispatcher.register(
                 CommandManager.literal("qt")
@@ -92,7 +93,7 @@ class SetTeleportSignCommand : Command<ServerCommandSource> {
                     .then(
                         CommandManager.literal("setdestination")
                             .then(
-                                CommandManager.argument("world", DimensionArgumentType.dimension())
+                                CommandManager.argument(WORLD_IDENTIFIER_ARG, DimensionArgumentType.dimension())
                                     .suggests(WorldsDimensionSuggestionProvider())
                                     .executes(SetTeleportSignCommand())
                             )

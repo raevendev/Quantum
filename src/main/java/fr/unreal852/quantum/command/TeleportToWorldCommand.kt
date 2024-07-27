@@ -23,15 +23,12 @@ class TeleportToWorldCommand : Command<ServerCommandSource> {
         }
 
         try {
-            val player = context.source.player
-            if (player == null || player.world == null) {
-                return 0
-            }
-
-            val worldName = IdentifierArgumentType.getIdentifier(context, "world")
+            val player = context.source.player ?: return 0
+            val worldName = IdentifierArgumentType.getIdentifier(context, WORLD_IDENTIFIER_ARG)
             val world = context.source.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, worldName))
+
             if (world == null) {
-                context.source.sendError(Text.literal("The specified world '$worldName' doesn't exist."))
+                context.source.sendError(Text.translatable("quantum.text.cmd.world.notexists.unspecified"))
                 return 0
             }
 
@@ -44,12 +41,15 @@ class TeleportToWorldCommand : Command<ServerCommandSource> {
     }
 
     companion object {
+
+        private const val WORLD_IDENTIFIER_ARG = "worldIdentifier"
+
         fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             dispatcher.register(CommandManager.literal("qt")
                 .then(CommandManager.literal("tp")
                     .requires { commandSource: ServerCommandSource -> commandSource.hasPermissionLevel(4) }
                     .then(
-                        CommandManager.argument("world", DimensionArgumentType.dimension())
+                        CommandManager.argument(WORLD_IDENTIFIER_ARG, DimensionArgumentType.dimension())
                             .suggests(WorldsDimensionSuggestionProvider())
                             .executes(TeleportToWorldCommand())
                     )))

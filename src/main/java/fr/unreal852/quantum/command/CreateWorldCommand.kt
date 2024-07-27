@@ -5,19 +5,19 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
-import fr.unreal852.quantum.QuantumManager.getOrOpenPersistentWorld
-import fr.unreal852.quantum.QuantumManager.getWorld
+import fr.unreal852.quantum.QuantumManager
 import fr.unreal852.quantum.command.suggestion.DifficultySuggestionProvider
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
-import fr.unreal852.quantum.utils.CommandArgumentsUtils
-import fr.unreal852.quantum.utils.TextUtils
+import fr.unreal852.quantum.utils.CommandArgumentsUtils.getEnumArgument
+import fr.unreal852.quantum.utils.CommandArgumentsUtils.getIdentifierArgument
+import fr.unreal852.quantum.utils.CommandArgumentsUtils.getSeedArgument
 import fr.unreal852.quantum.world.QuantumWorldData
 import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.util.Formatting
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.world.Difficulty
 import net.minecraft.world.World
@@ -27,77 +27,75 @@ import kotlin.random.Random
 
 class CreateWorldCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
+
         if (context.source == null)
             return 0
 
         try {
 
             val server = context.source.server
-            val worldName = StringArgumentType.getString(context, "worldName").lowercase()
+            val worldName = StringArgumentType.getString(context, WORLD_NAME_ARG).lowercase()
+            val worldIdentifier = Identifier.of(Quantum.MOD_ID, worldName)
 
-            if (getWorld(worldName) != null) {
-                context.source.sendError(TextUtils.literal("A world with the same name already exists.", Formatting.WHITE))
-                return 1
+            if (QuantumManager.worldExists(worldIdentifier)) {
+                context.source.sendError(Text.translatable("quantum.text.cmd.world.exists", worldName))
+                return 0
             }
 
-            val worldIdentifier = Identifier.of("quantum", worldName)
+            val worldDifficulty = getEnumArgument(context, WORLD_DIFFICULTY_ARG, Difficulty::class.java, server.saveProperties.difficulty)
+            val dimensionIdentifier = getIdentifierArgument(context, WORLD_DIMENSION_ARG, DimensionTypes.OVERWORLD_ID)
+            val serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, dimensionIdentifier)) ?: server.getWorld(World.OVERWORLD)!!
+            val worldSeed = getSeedArgument(context, WORLD_SEED_ARG, Random.nextLong())
+
             val worldConfig = RuntimeWorldConfig()
+                .setDifficulty(worldDifficulty)
+                .setDimensionType(serverWorld.dimensionEntry)
+                .setGenerator(serverWorld.chunkManager.chunkGenerator)
+                .setSeed(worldSeed)
 
-            val difficulty = CommandArgumentsUtils.getEnumArgument(Difficulty::class.java, context, "worldDifficulty", server.saveProperties.difficulty)
-            val dimensionTypeIdentifier = CommandArgumentsUtils.getIdentifierArgument(context, "worldDimension", DimensionTypes.OVERWORLD_ID)
-            val seed = CommandArgumentsUtils.getSeedArgument(context, "worldSeed", Random.nextLong())
-            var serverWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, dimensionTypeIdentifier))
+            val quantumWorldData = QuantumWorldData(worldIdentifier, dimensionIdentifier, worldConfig)
 
-            if (serverWorld == null) {
-                serverWorld = server.getWorld(World.OVERWORLD)
-                Quantum.LOGGER.warn("No world found for '{}'. Defaulting to minecraft:overworld", dimensionTypeIdentifier.toString())
-            }
+            QuantumManager.getOrOpenPersistentWorld(server, quantumWorldData, true)
 
-            worldConfig.setDifficulty(difficulty)
-            worldConfig.setDimensionType(serverWorld!!.dimensionEntry)
-            worldConfig.setGenerator(serverWorld.chunkManager.chunkGenerator)
-            worldConfig.setSeed(seed)
-
-            getOrOpenPersistentWorld(server, QuantumWorldData(worldIdentifier, dimensionTypeIdentifier, worldConfig), true)
-            context.source.sendMessage(TextUtils.literal("World '$worldName' created!", Formatting.WHITE))
+            context.source.sendMessage(Text.translatable("quantum.text.cmd.world.created", worldName))
         } catch (e: Exception) {
             Quantum.LOGGER.error("An error occurred while creating the world.", e)
-                }
+        }
 
-                return 1
+        return 1
     }
 
     companion object {
+
+        private const val WORLD_NAME_ARG = "worldName"
+        private const val WORLD_DIFFICULTY_ARG = "worldDifficulty"
+        private const val WORLD_DIMENSION_ARG = "worldDifficulty"
+        private const val WORLD_SEED_ARG = "worldSeed"
+
         fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             dispatcher.register(CommandManager.literal("qt")
-                .then(CommandManager.literal("create")
+                .then(CommandManager.literal("createworld")
                     .requires { commandSource: ServerCommandSource -> commandSource.hasPermissionLevel(4) }
                     .then(
-                        CommandManager.literal("world")
+                        CommandManager.argument(WORLD_NAME_ARG, StringArgumentType.string())
+                            .executes(CreateWorldCommand())
                             .then(
-                                CommandManager.argument("worldName", StringArgumentType.string())
+                                CommandManager.argument(WORLD_DIFFICULTY_ARG, StringArgumentType.string())
+                                    .suggests(DifficultySuggestionProvider())
+                                    .executes(CreateWorldCommand())
                                     .then(
-                                        CommandManager.argument("worldDifficulty", StringArgumentType.string())
-                                            .suggests(DifficultySuggestionProvider())
-                                            .then(
-                                                CommandManager.argument(
-                                                    "worldDimension",
-                                                    DimensionArgumentType.dimension()
-                                                )
-                                                    .suggests(WorldsDimensionSuggestionProvider())
-                                                    .then(
-                                                        CommandManager.argument(
-                                                            "worldSeed",
-                                                            StringArgumentType.string()
-                                                        )
-                                                            .executes(CreateWorldCommand())
-                                                    )
-                                            )
+                                        CommandManager.argument(WORLD_DIMENSION_ARG, DimensionArgumentType.dimension())
+                                            .suggests(WorldsDimensionSuggestionProvider())
                                             .executes(CreateWorldCommand())
+                                            .then(
+                                                CommandManager.argument(WORLD_SEED_ARG, StringArgumentType.string())
+                                                    .executes(CreateWorldCommand())
+                                            )
                                     )
                             )
                     )
-                ))
+                )
+            )
         }
     }
 }
