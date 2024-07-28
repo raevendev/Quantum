@@ -1,0 +1,11 @@
+﻿{
+  "quantum.text.cmd.world.exists": "Un monde avec le nom %d existe déjà.",
+  "quantum.text.cmd.world.notexists": "Un monde avec le nom %d n'existe pas ou n'a pas été créer avec Quantum.",
+  "quantum.text.cmd.world.notexists.unspecified": "Le monde spécifié n'existe pas.",
+  "quantum.text.cmd.world.created": "§aLe monde §6§l%d §aa été créer avec succès !",
+  "quantum.text.cmd.world.deleted": "§aLe monde §6§l%d §aa été supprimé avec succès !",
+  "quantum.text.cmd.world.spawnset": "§aLe point d'apparition du monde §6§l%d §aa été modifié avec succès!",
+  "quantum.text.cmd.sign.lookat": "Vous devez regarder un panneau pour pouvoir le définir en tant que téléporteur.",
+  "quantum.text.cmd.sign.failed": "Une erreur est survenue en essayant de définir la destionation de ce panneau.",
+  "quantum.text.cmd.sign.success": "§aLa destination du panneau a été définie vers §6§l%d"
+}
