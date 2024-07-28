@@ -5,7 +5,8 @@ package fr.unreal852.quantum
 import fr.unreal852.quantum.utils.Extensions.getWorldByIdentifier
 import fr.unreal852.quantum.world.QuantumWorld
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.world.states.QuantumPersistentState
+import fr.unreal852.quantum.world.state.QuantumPersistentState
+import net.kyrptonaught.customportalapi.api.CustomPortalBuilder
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import net.minecraft.world.GameRules
@@ -87,6 +88,10 @@ object QuantumManager {
             getOrOpenPersistentWorld(server, world, false)
             Quantum.LOGGER.info("Found enabled world '{}', loading it.", world.worldId)
         }
+    }
+
+    fun createPortal() {
+        CustomPortalBuilder.beginPortal()
     }
 
     // Old Portal code. =====================================

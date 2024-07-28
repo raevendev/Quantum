@@ -2,7 +2,7 @@
 
 package fr.unreal852.quantum.utils
 
-import fr.unreal852.quantum.world.states.QuantumWorldPersistentState
+import fr.unreal852.quantum.world.state.QuantumWorldPersistentState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.RegistryKey

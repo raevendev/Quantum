@@ -1,4 +1,4 @@
-package fr.unreal852.quantum.world.states
+package fr.unreal852.quantum.world.state
 
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.world.QuantumWorldData
