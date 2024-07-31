@@ -4,7 +4,6 @@ import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
-import fr.unreal852.quantum.QuantumManager
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
 import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
@@ -22,12 +21,12 @@ class DeleteWorldCommand : Command<ServerCommandSource> {
 
             val worldName = IdentifierArgumentType.getIdentifier(context, WORLD_NAME_ARG)
 
-            if (!QuantumManager.worldExists(worldName)) {
+            if (!Quantum.worldExists(worldName)) {
                 context.source.sendError(Text.translatable("quantum.text.cmd.world.notexists.unspecified"))
                 return 0
             }
 
-            if (QuantumManager.deleteWorld(worldName)) {
+            if (Quantum.deleteWorld(worldName)) {
                 context.source.sendMessage(Text.translatable("quantum.text.cmd.world.deleted", worldName.toString()))
             }
         } catch (e: Exception) {

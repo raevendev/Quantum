@@ -5,7 +5,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.Identifier
 import xyz.nucleoid.fantasy.RuntimeWorldConfig
 
-class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorldConfig: RuntimeWorldConfig?) {
+class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorldConfig: RuntimeWorldConfig) {
 
     var enabled = true
 
@@ -13,7 +13,7 @@ class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorl
         private set
     var dimensionId: Identifier = dimensionId
         private set
-    var runtimeWorldConfig: RuntimeWorldConfig? = runtimeWorldConfig
+    var runtimeWorldConfig: RuntimeWorldConfig = runtimeWorldConfig
         private set
 
     fun writeToNbt(nbt: NbtCompound) {
@@ -27,7 +27,8 @@ class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorl
         fun fromNbt(nbt: NbtCompound): QuantumWorldData {
             val quantumWorldData = QuantumWorldData(
                 nbt.getIdentifier("worldId"),
-                nbt.getIdentifier("dimensionId"), null
+                nbt.getIdentifier("dimensionId"),
+                RuntimeWorldConfig()
             )
             quantumWorldData.enabled = nbt.getBoolean("enabled")
             return quantumWorldData
