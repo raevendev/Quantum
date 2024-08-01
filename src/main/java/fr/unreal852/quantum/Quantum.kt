@@ -3,31 +3,31 @@ package fr.unreal852.quantum
 import fr.unreal852.quantum.callback.PlayerRespawnHandler
 import fr.unreal852.quantum.callback.PlayerUseSignHandler
 import fr.unreal852.quantum.command.CommandRegistration
-import fr.unreal852.quantum.utils.Extensions.getWorldByIdentifier
+import fr.unreal852.quantum.utils.Extensions.setDimensionAndGenerator
 import fr.unreal852.quantum.world.QuantumWorld
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.world.state.QuantumPersistentState
+import fr.unreal852.quantum.world.state.QuantumStorage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarted
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
-import net.minecraft.world.GameRules
-import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.nucleoid.fantasy.Fantasy
-import xyz.nucleoid.fantasy.RuntimeWorldConfig
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
+object Quantum : ModInitializer {
 
-class Quantum : ModInitializer {
+    const val MOD_ID = "quantum"
+    val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
+    val CONFIG_FOLDER: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
+    private val WORLDS: MutableMap<Identifier, QuantumWorld> = ConcurrentHashMap()
+
     override fun onInitialize() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
@@ -44,99 +44,52 @@ class Quantum : ModInitializer {
         ServerPlayerEvents.AFTER_RESPAWN.register(PlayerRespawnHandler())
     }
 
-    companion object {
+    fun getWorld(identifier: Identifier): QuantumWorld? {
+        return WORLDS[identifier]
+    }
 
-        const val MOD_ID = "quantum"
-        val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
-        val CONFIG_FOLDER: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
+    fun worldExists(identifier: Identifier): Boolean {
+        return WORLDS.containsKey(identifier)
+    }
 
-        private val WORLDS: MutableMap<Identifier, QuantumWorld> = ConcurrentHashMap()
+    fun getOrCreateWorld(server: MinecraftServer, worldData: QuantumWorldData, saveToDisk: Boolean): QuantumWorld? {
+        if (WORLDS.containsKey(worldData.worldId))
+            return WORLDS[worldData.worldId]
 
-        fun getWorld(identifier: Identifier): QuantumWorld? {
-            return WORLDS[identifier]
-        }
+        val fantasy = Fantasy.get(server)
+        val runtimeWorldConfig = worldData.runtimeWorldConfig.setDimensionAndGenerator(server, worldData) // Important, set dim and chunk generator
+        val runtimeWorldHandle = fantasy.getOrOpenPersistentWorld(worldData.worldId, runtimeWorldConfig)
 
-        fun worldExists(identifier: Identifier): Boolean {
-            return WORLDS.containsKey(identifier)
-        }
+        val world = QuantumWorld(runtimeWorldHandle, worldData)
+        WORLDS[worldData.worldId] = world
 
-        fun getOrOpenPersistentWorld(server: MinecraftServer, worldData: QuantumWorldData, saveToDisk: Boolean): QuantumWorld? {
-            if (WORLDS.containsKey(worldData.worldId))
-                return WORLDS[worldData.worldId]
+        if (saveToDisk)
+            QuantumStorage.getQuantumState(server).addWorldData(worldData)
 
-            val fantasy = Fantasy.get(server)
-            val runtimeWorldConfig = getOrCreateRuntimeWorldConfig(server, worldData)
-            val runtimeWorldHandle = fantasy.getOrOpenPersistentWorld(worldData.worldId, runtimeWorldConfig)
+        return world
+    }
 
-            // TODO: CustomPortalsMod.dims.put(worldConfig.getWorldId(), runtimeWorldHandle.getRegistryKey());
-            val world = QuantumWorld(runtimeWorldHandle, worldData)
-            WORLDS[worldData.worldId] = world
+    fun deleteWorld(identifier: Identifier): Boolean {
+        val world = WORLDS.getOrDefault(identifier, null) ?: return false
+        val server = world.serverWorld.server
+        val fantasy = Fantasy.get(world.serverWorld.server)
 
-            if (saveToDisk)
-                QuantumPersistentState.getQuantumState(server).addWorldData(worldData)
+        if (!fantasy.tickDeleteWorld(world.serverWorld))
+            return false
 
-            return world
-        }
+        val state = QuantumStorage.getQuantumState(server)
+        state.removeWorldData(world.worldData)
+        WORLDS.remove(identifier)
 
-        fun getOrCreateRuntimeWorldConfig(server: MinecraftServer, worldData: QuantumWorldData): RuntimeWorldConfig? {
+        return true
+    }
 
-            //qt createworld test HARD minecraft:the_nether myseed
+    fun loadExistingWorlds(server: MinecraftServer) {
+        val state = QuantumStorage.getQuantumState(server)
 
-            val worldConfig = RuntimeWorldConfig()
-            var dimensionWorld = server.getWorldByIdentifier(worldData.dimensionId)
-
-            if(dimensionWorld == null)
-            {
-                LOGGER.error("Failed to retrieve dimension ${worldData.dimensionId}. Defaulting to minecraft:overworld")
-                dimensionWorld = server.overworld
-            }
-
-            worldConfig.setDimensionType(dimensionWorld!!.dimensionEntry)
-                .setGenerator(dimensionWorld.chunkManager.chunkGenerator)
-                .setShouldTickTime(true)
-
-
-
-
-//            val runtimeWorldConfig = RuntimeWorldConfig()
-//            val serverWorld = server.getWorldByIdentifier(worldData.worldId)
-//
-//            if (serverWorld != null) {
-//                runtimeWorldConfig.setDimensionType(serverWorld.dimensionEntry).setGenerator(serverWorld.chunkManager.chunkGenerator)
-//            }
-//
-//            if (runtimeWorldConfig.generator == null) {
-//                runtimeWorldConfig.setGenerator(server.overworld.chunkManager.chunkGenerator)
-//                LOGGER.warn("The config has no generator, setting the generator to the default one.")
-//            }
-//
-//            runtimeWorldConfig.setGameRule(GameRules.DO_DAYLIGHT_CYCLE, true)
-//
-//            return runtimeWorldConfig
-        }
-
-        fun deleteWorld(identifier: Identifier): Boolean {
-            val world = WORLDS.getOrDefault(identifier, null) ?: return false
-            val server = world.serverWorld.server
-            val fantasy = Fantasy.get(world.serverWorld.server)
-
-            if (!fantasy.tickDeleteWorld(world.serverWorld))
-                return false
-
-            val state = QuantumPersistentState.getQuantumState(server)
-            state.removeWorldData(world.worldData)
-            WORLDS.remove(identifier)
-
-            return true
-        }
-
-        fun loadExistingWorlds(server: MinecraftServer) {
-            val state = QuantumPersistentState.getQuantumState(server)
-
-            for (world in state.getWorlds()) {
-                getOrOpenPersistentWorld(server, world, false)
-                LOGGER.info("Found world '{}', loading it.", world.worldId)
-            }
+        for (world in state.getWorlds()) {
+            getOrCreateWorld(server, world, false)
+            LOGGER.info("Found world '{}', loading it.", world.worldId)
         }
     }
 }

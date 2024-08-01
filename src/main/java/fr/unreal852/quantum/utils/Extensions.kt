@@ -2,7 +2,9 @@
 
 package fr.unreal852.quantum.utils
 
-import fr.unreal852.quantum.world.state.QuantumWorldPersistentState
+import fr.unreal852.quantum.Quantum
+import fr.unreal852.quantum.world.QuantumWorldData
+import fr.unreal852.quantum.world.state.QuantumWorldStorage
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.RegistryKey
@@ -12,6 +14,7 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.TeleportTarget
+import xyz.nucleoid.fantasy.RuntimeWorldConfig
 
 object Extensions {
 
@@ -20,7 +23,7 @@ object Extensions {
     }
 
     fun PlayerEntity.teleportToWorld(targetWorld: ServerWorld) {
-        val worldState = QuantumWorldPersistentState.getWorldState(targetWorld)
+        val worldState = QuantumWorldStorage.getWorldState(targetWorld)
         val teleportTarget = TeleportTarget(
             targetWorld, worldState.worldSpawnPos,
             Vec3d.ZERO, worldState.worldSpawnAngle.x, worldState.worldSpawnAngle.y, false
@@ -43,7 +46,20 @@ object Extensions {
     }
 
     fun ServerWorld.setCustomSpawnPos(pos: Vec3d, yaw: Float, pitch: Float) {
-        val worldState = QuantumWorldPersistentState.getWorldState(this)
+        val worldState = QuantumWorldStorage.getWorldState(this)
         worldState.setWorldSpawn(pos, yaw, pitch)
+    }
+
+    fun RuntimeWorldConfig.setDimensionAndGenerator(server: MinecraftServer, worldData: QuantumWorldData): RuntimeWorldConfig {
+        var dimensionWorld = server.getWorldByIdentifier(worldData.dimensionId)
+
+        if (dimensionWorld == null) {
+            Quantum.LOGGER.error("Failed to retrieve dimension ${worldData.dimensionId}. Defaulting to minecraft:overworld")
+            dimensionWorld = server.overworld
+        }
+
+        worldData.runtimeWorldConfig.setDimensionType(dimensionWorld!!.dimensionEntry)
+            .setGenerator(dimensionWorld.chunkManager.chunkGenerator)
+        return this
     }
 }

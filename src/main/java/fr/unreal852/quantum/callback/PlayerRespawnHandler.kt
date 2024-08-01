@@ -1,6 +1,6 @@
 ﻿package fr.unreal852.quantum.callback
 
-import fr.unreal852.quantum.world.state.QuantumWorldPersistentState
+import fr.unreal852.quantum.world.state.QuantumWorldStorage
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents.AfterRespawn
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket
 import net.minecraft.network.packet.s2c.play.PositionFlag
@@ -13,7 +13,7 @@ class PlayerRespawnHandler : AfterRespawn {
 
     override fun afterRespawn(oldPlayer: ServerPlayerEntity, newPlayer: ServerPlayerEntity, alive: Boolean) {
 
-        val worldState = QuantumWorldPersistentState.getWorldState(newPlayer.serverWorld)
+        val worldState = QuantumWorldStorage.getWorldState(newPlayer.serverWorld)
 
         val playerPositionPacket = PlayerPositionLookS2CPacket(
             worldState.worldSpawnPos.x, worldState.worldSpawnPos.y, worldState.worldSpawnPos.z,

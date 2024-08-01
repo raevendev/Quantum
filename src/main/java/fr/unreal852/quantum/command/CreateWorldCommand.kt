@@ -51,10 +51,11 @@ class CreateWorldCommand : Command<ServerCommandSource> {
                 .setDimensionType(serverWorld.dimensionEntry)
                 .setGenerator(serverWorld.chunkManager.chunkGenerator)
                 .setSeed(worldSeed)
+                .setShouldTickTime(true)
 
             val quantumWorldData = QuantumWorldData(worldIdentifier, dimensionIdentifier, worldConfig)
 
-            Quantum.getOrOpenPersistentWorld(server, quantumWorldData, true)
+            Quantum.getOrCreateWorld(server, quantumWorldData, true)
 
             context.source.sendMessage(Text.translatable("quantum.text.cmd.world.created", worldName))
         } catch (e: Exception) {
