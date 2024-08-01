@@ -13,9 +13,12 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarted
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import net.minecraft.world.GameRules
+import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.nucleoid.fantasy.Fantasy
@@ -77,21 +80,39 @@ class Quantum : ModInitializer {
 
         fun getOrCreateRuntimeWorldConfig(server: MinecraftServer, worldData: QuantumWorldData): RuntimeWorldConfig? {
 
-            val runtimeWorldConfig = RuntimeWorldConfig()
-            val serverWorld = server.getWorldByIdentifier(worldData.worldId)
+            //qt createworld test HARD minecraft:the_nether myseed
 
-            if (serverWorld != null) {
-                runtimeWorldConfig.setDimensionType(serverWorld.dimensionEntry).setGenerator(serverWorld.chunkManager.chunkGenerator)
+            val worldConfig = RuntimeWorldConfig()
+            var dimensionWorld = server.getWorldByIdentifier(worldData.dimensionId)
+
+            if(dimensionWorld == null)
+            {
+                LOGGER.error("Failed to retrieve dimension ${worldData.dimensionId}. Defaulting to minecraft:overworld")
+                dimensionWorld = server.overworld
             }
 
-            if (runtimeWorldConfig.generator == null) {
-                runtimeWorldConfig.setGenerator(server.overworld.chunkManager.chunkGenerator)
-                LOGGER.warn("The config has no generator, setting the generator to the default one.")
-            }
+            worldConfig.setDimensionType(dimensionWorld!!.dimensionEntry)
+                .setGenerator(dimensionWorld.chunkManager.chunkGenerator)
+                .setShouldTickTime(true)
 
-            runtimeWorldConfig.setGameRule(GameRules.DO_DAYLIGHT_CYCLE, true)
 
-            return runtimeWorldConfig
+
+
+//            val runtimeWorldConfig = RuntimeWorldConfig()
+//            val serverWorld = server.getWorldByIdentifier(worldData.worldId)
+//
+//            if (serverWorld != null) {
+//                runtimeWorldConfig.setDimensionType(serverWorld.dimensionEntry).setGenerator(serverWorld.chunkManager.chunkGenerator)
+//            }
+//
+//            if (runtimeWorldConfig.generator == null) {
+//                runtimeWorldConfig.setGenerator(server.overworld.chunkManager.chunkGenerator)
+//                LOGGER.warn("The config has no generator, setting the generator to the default one.")
+//            }
+//
+//            runtimeWorldConfig.setGameRule(GameRules.DO_DAYLIGHT_CYCLE, true)
+//
+//            return runtimeWorldConfig
         }
 
         fun deleteWorld(identifier: Identifier): Boolean {
@@ -113,10 +134,8 @@ class Quantum : ModInitializer {
             val state = QuantumPersistentState.getQuantumState(server)
 
             for (world in state.getWorlds()) {
-                if (!world.enabled)
-                    continue
                 getOrOpenPersistentWorld(server, world, false)
-                LOGGER.info("Found enabled world '{}', loading it.", world.worldId)
+                LOGGER.info("Found world '{}', loading it.", world.worldId)
             }
         }
     }

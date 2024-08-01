@@ -2,12 +2,14 @@ package fr.unreal852.quantum.world
 
 import fr.unreal852.quantum.utils.Extensions.getIdentifier
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 import xyz.nucleoid.fantasy.RuntimeWorldConfig
 
 class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorldConfig: RuntimeWorldConfig) {
-
-    var enabled = true
 
     var worldId: Identifier = worldId
         private set
@@ -17,20 +19,25 @@ class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorl
         private set
 
     fun writeToNbt(nbt: NbtCompound) {
-        nbt.putBoolean("enabled", enabled)
-        nbt.putString("worldId", worldId.toString())
-        nbt.putString("dimensionId", dimensionId.toString())
+        nbt.putString(WORLD_KEY, worldId.toString())
+        nbt.putString(DIM_KEY, dimensionId.toString())
     }
 
     companion object {
 
+        const val WORLD_KEY = "worldId"
+        const val DIM_KEY = "dimensionId"
+
         fun fromNbt(nbt: NbtCompound): QuantumWorldData {
+
+            val worldId = nbt.getIdentifier(WORLD_KEY)
+            val dimensionId = nbt.getIdentifier(DIM_KEY)
+
             val quantumWorldData = QuantumWorldData(
-                nbt.getIdentifier("worldId"),
-                nbt.getIdentifier("dimensionId"),
+                worldId,
+                dimensionId,
                 RuntimeWorldConfig()
             )
-            quantumWorldData.enabled = nbt.getBoolean("enabled")
             return quantumWorldData
         }
     }
