@@ -41,17 +41,14 @@ object Extensions {
         this.teleportTo(teleportTarget)
     }
 
-    fun MinecraftServer.getWorldByIdentifier(identifier: Identifier): ServerWorld? {
-        return this.getWorld(RegistryKey.of(RegistryKeys.WORLD, identifier))
-    }
-
     fun ServerWorld.setCustomSpawnPos(pos: Vec3d, yaw: Float, pitch: Float) {
         val worldState = QuantumWorldStorage.getWorldState(this)
         worldState.setWorldSpawn(pos, yaw, pitch)
     }
 
     fun RuntimeWorldConfig.setDimensionAndGenerator(server: MinecraftServer, worldData: QuantumWorldData): RuntimeWorldConfig {
-        var dimensionWorld = server.getWorldByIdentifier(worldData.dimensionId)
+        val worldRegKey = RegistryKey.of(RegistryKeys.WORLD, worldData.dimensionId)
+        var dimensionWorld = server.getWorld(worldRegKey)
 
         if (dimensionWorld == null) {
             Quantum.LOGGER.error("Failed to retrieve dimension ${worldData.dimensionId}. Defaulting to minecraft:overworld")
