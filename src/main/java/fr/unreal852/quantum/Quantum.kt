@@ -37,7 +37,7 @@ object Quantum : ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register(ServerStarted { server: MinecraftServer ->
 
-            loadExistingWorlds(server)
+            loadWorlds(server)
         })
 
         UseBlockCallback.EVENT.register(PlayerUseSignHandler())
@@ -80,7 +80,7 @@ object Quantum : ModInitializer {
         return true
     }
 
-    fun loadExistingWorlds(server: MinecraftServer) {
+    private fun loadWorlds(server: MinecraftServer) {
         val state = QuantumStorage.getQuantumState(server)
 
         for (world in state.getWorlds()) {
