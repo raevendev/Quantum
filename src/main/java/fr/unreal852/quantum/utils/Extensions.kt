@@ -4,7 +4,7 @@ package fr.unreal852.quantum.utils
 
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.world.state.QuantumWorldStorage
+import fr.unreal852.quantum.state.QuantumWorldStorage
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.RegistryKey

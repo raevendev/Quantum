@@ -1,4 +1,4 @@
-package fr.unreal852.quantum.world.state
+package fr.unreal852.quantum.state
 
 import fr.unreal852.quantum.Quantum
 import net.minecraft.nbt.NbtCompound

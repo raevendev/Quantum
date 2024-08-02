@@ -6,7 +6,7 @@ import fr.unreal852.quantum.command.CommandRegistration
 import fr.unreal852.quantum.utils.Extensions.setDimensionAndGenerator
 import fr.unreal852.quantum.world.QuantumWorld
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.world.state.QuantumStorage
+import fr.unreal852.quantum.state.QuantumStorage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents

@@ -1,6 +1,6 @@
 ﻿package fr.unreal852.quantum.callback
 
-import fr.unreal852.quantum.world.state.QuantumWorldStorage
+import fr.unreal852.quantum.state.QuantumWorldStorage
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents.AfterRespawn
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket
 import net.minecraft.network.packet.s2c.play.PositionFlag
