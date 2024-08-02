@@ -2,7 +2,6 @@ package fr.unreal852.quantum.state
 
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.world.QuantumWorldData.Companion.fromNbt
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
@@ -42,6 +41,7 @@ class QuantumStorage : PersistentState() {
 
         private const val STORAGE_ID = Quantum.MOD_ID
         private const val WORLDS_KEY = "worlds"
+        private const val PORTALS_KEY = "portals"
 
         private val PersistentStateTypeLoader = Type(
             { QuantumStorage() },
@@ -56,13 +56,13 @@ class QuantumStorage : PersistentState() {
             return quantumState
         }
 
-        @Suppress("UNUSED_PARAMETER", "MemberVisibilityCanBePrivate")
-        fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup): QuantumStorage {
+        @Suppress("UNUSED_PARAMETER")
+        private fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup): QuantumStorage {
             val quantumStorage = QuantumStorage()
             val worldsNbtList = nbt.getList(WORLDS_KEY, 10) // 10 is the NbtCompound type
             for (i in worldsNbtList.indices) {
                 val entryNbt = worldsNbtList.getCompound(i)
-                quantumStorage.worlds.add(fromNbt(entryNbt))
+                quantumStorage.worlds.add(QuantumWorldData.fromNbt(entryNbt))
             }
             return quantumStorage
         }
