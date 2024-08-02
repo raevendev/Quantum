@@ -44,10 +44,6 @@ object Quantum : ModInitializer {
         ServerPlayerEvents.AFTER_RESPAWN.register(PlayerRespawnHandler())
     }
 
-    fun getWorld(identifier: Identifier): QuantumWorld? {
-        return WORLDS[identifier]
-    }
-
     fun worldExists(identifier: Identifier): Boolean {
         return WORLDS.containsKey(identifier)
     }
