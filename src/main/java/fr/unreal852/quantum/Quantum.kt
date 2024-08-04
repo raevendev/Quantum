@@ -38,9 +38,8 @@ object Quantum : ModInitializer {
         CommandRegistration.registerCommands()
 
         ServerLifecycleEvents.SERVER_STARTED.register(ServerStarted { server: MinecraftServer ->
-
             loadWorlds(server)
-            loadPortals(server)
+            // TODO: loadPortals(server)
         })
 
         UseBlockCallback.EVENT.register(PlayerUseSignHandler())
@@ -63,7 +62,7 @@ object Quantum : ModInitializer {
         WORLDS[worldData.worldId] = world
 
         if (saveToDisk)
-            QuantumStorage.getQuantumState(server).addWorldData(worldData)
+            QuantumStorage.getQuantumState(server).addWorld(worldData)
 
         return world
     }
@@ -77,7 +76,7 @@ object Quantum : ModInitializer {
             return false
 
         val state = QuantumStorage.getQuantumState(server)
-        state.removeWorldData(world.worldData)
+        state.removeWorld(world.worldData)
         WORLDS.remove(identifier)
 
         return true

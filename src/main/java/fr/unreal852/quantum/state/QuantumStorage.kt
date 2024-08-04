@@ -7,7 +7,6 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Identifier
 import net.minecraft.world.PersistentState
 
 class QuantumStorage : PersistentState() {
@@ -23,45 +22,53 @@ class QuantumStorage : PersistentState() {
         return portals
     }
 
-    fun addWorldData(quantumWorldData: QuantumWorldData) {
-        worlds.add(quantumWorldData)
+    fun getPortal(predicate: (QuantumPortalData) -> Boolean): QuantumPortalData? {
+        return portals.find(predicate)
+    }
+
+    fun addWorld(worldData: QuantumWorldData) {
+        worlds.add(worldData)
         markDirty()
     }
 
-    fun addPortalData(quantumPortalData: QuantumPortalData) {
-        portals.add(quantumPortalData)
+    fun addPortal(portalData: QuantumPortalData) {
+        portals.add(portalData)
         markDirty()
     }
 
-    fun removeWorldData(quantumWorldData: QuantumWorldData) {
-        worlds.remove(quantumWorldData)
+    fun removeWorld(worldData: QuantumWorldData) {
+        worlds.remove(worldData)
         markDirty()
     }
 
-    fun removePortalData(quantumPortalData: Identifier) {
-        portals.remove(portals.first {
-            it.portalBlockId == quantumPortalData
-        })
+    fun removeWorld(predicate: (QuantumWorldData) -> Boolean): Boolean {
+        val world = worlds.find(predicate) ?: return false
+        worlds.remove(world)
         markDirty()
+        return true
     }
 
-    fun portalExists(quantumPortalData: Identifier): Boolean {
-        for (portalData in portals) {
-            if (portalData.portalBlockId == quantumPortalData) {
-                return true
-            }
-        }
-        return false
+    fun removePortal(portalData: QuantumPortalData): Boolean {
+        return portals.remove(portalData)
+    }
+
+    fun removePortal(predicate: (QuantumPortalData) -> Boolean): Boolean {
+        val portal = portals.find(predicate) ?: return false
+        portals.remove(portal)
+        markDirty()
+        return true
     }
 
     override fun writeNbt(nbt: NbtCompound, registryLookup: WrapperLookup): NbtCompound {
         val worldsNbtList = NbtList()
         val portalsNbtList = NbtList()
+
         for (entry in worlds) {
             val entryNbt = NbtCompound()
             entry.writeToNbt(entryNbt)
             worldsNbtList.add(entryNbt)
         }
+
         for (entry in portals) {
             val entryNbt = NbtCompound()
             entry.writeToNbt(entryNbt)

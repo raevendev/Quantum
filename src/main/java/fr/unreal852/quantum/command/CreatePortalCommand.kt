@@ -15,6 +15,7 @@ import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.registry.Registries
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.text.Text
 
 class CreatePortalCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
@@ -24,26 +25,27 @@ class CreatePortalCommand : Command<ServerCommandSource> {
 
         try {
 
-            val portalBlock = IdentifierArgumentType.getIdentifier(context, PORTAL_BLOCK_ARG)
-            val destinationWorld = IdentifierArgumentType.getIdentifier(context, PORTAL_DESTINATION_ARG)
+            val quantumStorage = QuantumStorage.getQuantumState(context.source.server)
+            val portalBlockId = IdentifierArgumentType.getIdentifier(context, PORTAL_BLOCK_ARG)
+
+            if (quantumStorage.getPortal { it.portalBlockId == portalBlockId } != null) {
+                context.source.sendMessage(Text.translatable("quantum.text.cmd.portal.exists", portalBlockId.toString()))
+                return 0;
+            }
+
+            val destinationId = IdentifierArgumentType.getIdentifier(context, PORTAL_DESTINATION_ARG)
             val portalItemId = IdentifierArgumentType.getIdentifier(context, PORTAL_ITEM_ARG)
             val portalItem = Registries.ITEM.get(portalItemId)
-            val quantumPortalData = QuantumPortalData(destinationWorld, portalBlock, portalItemId, 1)
+            val quantumPortalData = QuantumPortalData(destinationId, portalBlockId, portalItemId, 1) // TODO: color argument
 
-            val quantumStorage = QuantumStorage.getQuantumState(context.source.server)
-
-            if (quantumStorage.portalExists(portalBlock)) {
-                Quantum.LOGGER.error("An error occurred while creating the portal.")
-                return 0
-            }
             CustomPortalBuilder.beginPortal()
-                .frameBlock(portalBlock)
+                .frameBlock(portalItemId)
                 .lightWithItem(portalItem)
-                .destDimID(destinationWorld)
+                .destDimID(destinationId)
                 .tintColor(255, 0, 0)
                 .registerPortal()
 
-            quantumStorage.addPortalData(quantumPortalData)
+            //quantumStorage.addPortal(quantumPortalData)
 
         } catch (e: Exception) {
             Quantum.LOGGER.error("An error occurred while creating the world.", e)
@@ -65,11 +67,9 @@ class CreatePortalCommand : Command<ServerCommandSource> {
                     .then(
                         CommandManager.argument(PORTAL_BLOCK_ARG, IdentifierArgumentType.identifier())
                             .suggests(BlocksSuggestionProvider())
-                            .executes(CreatePortalCommand())
                             .then(
                                 CommandManager.argument(PORTAL_ITEM_ARG, IdentifierArgumentType.identifier())
                                     .suggests(ItemsSuggestionProvider())
-                                    .executes(CreatePortalCommand())
                                     .then(
                                         CommandManager.argument(PORTAL_DESTINATION_ARG, DimensionArgumentType.dimension())
                                             .suggests(WorldsDimensionSuggestionProvider())

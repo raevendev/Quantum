@@ -9,6 +9,7 @@ import fr.unreal852.quantum.state.QuantumStorage
 import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.text.Text
 
 class DeletePortalCommand : Command<ServerCommandSource> {
     override fun run(context: CommandContext<ServerCommandSource>): Int {
@@ -18,18 +19,19 @@ class DeletePortalCommand : Command<ServerCommandSource> {
 
         try {
 
-            val portalBlock = IdentifierArgumentType.getIdentifier(context, PORTAL_BLOCK_ARG)
+            val portalBlockId = IdentifierArgumentType.getIdentifier(context, PORTAL_BLOCK_ARG)
             val quantumStorage = QuantumStorage.getQuantumState(context.source.server)
+            val portal = quantumStorage.getPortal { it.portalBlockId == portalBlockId }
 
-            if (!quantumStorage.portalExists(portalBlock)) {
-                Quantum.LOGGER.error("An error occurred while creating the portal.")
+            if (portal == null) {
+                context.source.sendMessage(Text.translatable("quantum.text.cmd.portal.notexists", portalBlockId.toString()))
                 return 0
             }
 
-            quantumStorage.removePortalData(portalBlock)
+            quantumStorage.removePortal(portal)
 
         } catch (e: Exception) {
-            Quantum.LOGGER.error("An error occurred while creating the world.", e)
+            Quantum.LOGGER.error("An error occurred while deleting the portal.", e)
         }
 
         return 1
