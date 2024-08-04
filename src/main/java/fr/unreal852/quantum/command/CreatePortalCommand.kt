@@ -30,7 +30,7 @@ class CreatePortalCommand : Command<ServerCommandSource> {
 
             if (quantumStorage.getPortal { it.portalBlockId == portalBlockId } != null) {
                 context.source.sendMessage(Text.translatable("quantum.text.cmd.portal.exists", portalBlockId.toString()))
-                return 0;
+                return 0
             }
 
             val destinationId = IdentifierArgumentType.getIdentifier(context, PORTAL_DESTINATION_ARG)
