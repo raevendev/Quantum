@@ -1,6 +1,7 @@
 package fr.unreal852.quantum.state
 
 import fr.unreal852.quantum.Quantum
+import fr.unreal852.quantum.portal.QuantumPortalData
 import fr.unreal852.quantum.world.QuantumWorldData
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
@@ -11,13 +12,23 @@ import net.minecraft.world.PersistentState
 class QuantumStorage : PersistentState() {
 
     private val worlds: MutableList<QuantumWorldData> = ArrayList()
+    private val portals: MutableList<QuantumPortalData> = ArrayList()
 
     fun getWorlds(): List<QuantumWorldData> {
         return worlds
     }
 
+    fun getPortals(): List<QuantumPortalData> {
+        return portals
+    }
+
     fun addWorldData(quantumWorldData: QuantumWorldData) {
         worlds.add(quantumWorldData)
+        markDirty()
+    }
+
+    fun addPortalData(quantumPortalData: QuantumPortalData) {
+        portals.add(quantumPortalData)
         markDirty()
     }
 
@@ -26,12 +37,22 @@ class QuantumStorage : PersistentState() {
         markDirty()
     }
 
+    fun removePortalData(quantumPortalData: QuantumPortalData) {
+        portals.remove(quantumPortalData)
+        markDirty()
+    }
+
     override fun writeNbt(nbt: NbtCompound, registryLookup: WrapperLookup): NbtCompound {
         val worldsNbtList = NbtList()
+        val portalsNbt = NbtList()
         for (entry in worlds) {
             val entryNbt = NbtCompound()
             entry.writeToNbt(entryNbt)
             worldsNbtList.add(entryNbt)
+        }
+        for (entry in portals) {
+            val entryNbt = NbtCompound()
+
         }
         nbt.put(WORLDS_KEY, worldsNbtList)
         return nbt
@@ -60,9 +81,14 @@ class QuantumStorage : PersistentState() {
         private fun fromNbt(nbt: NbtCompound, registryLookup: WrapperLookup): QuantumStorage {
             val quantumStorage = QuantumStorage()
             val worldsNbtList = nbt.getList(WORLDS_KEY, 10) // 10 is the NbtCompound type
+            val portalsNbt = nbt.getList(PORTALS_KEY, 10)
             for (i in worldsNbtList.indices) {
                 val entryNbt = worldsNbtList.getCompound(i)
                 quantumStorage.worlds.add(QuantumWorldData.fromNbt(entryNbt))
+            }
+            for (i in portalsNbt.indices) {
+                val entryNbt = portalsNbt.getCompound(i)
+                quantumStorage.portals.add(QuantumPortalData.fromNbt(entryNbt))
             }
             return quantumStorage
         }
