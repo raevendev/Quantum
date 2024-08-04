@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.MinecraftServer
+import net.minecraft.util.Identifier
 import net.minecraft.world.PersistentState
 
 class QuantumStorage : PersistentState() {
@@ -37,14 +38,25 @@ class QuantumStorage : PersistentState() {
         markDirty()
     }
 
-    fun removePortalData(quantumPortalData: QuantumPortalData) {
-        portals.remove(quantumPortalData)
+    fun removePortalData(quantumPortalData: Identifier) {
+        portals.remove(portals.first {
+            it.portalBlockId == quantumPortalData
+        })
         markDirty()
+    }
+
+    fun portalExists(quantumPortalData: Identifier): Boolean {
+        for (portalData in portals) {
+            if (portalData.portalBlockId == quantumPortalData) {
+                return true
+            }
+        }
+        return false
     }
 
     override fun writeNbt(nbt: NbtCompound, registryLookup: WrapperLookup): NbtCompound {
         val worldsNbtList = NbtList()
-        val portalsNbt = NbtList()
+        val portalsNbtList = NbtList()
         for (entry in worlds) {
             val entryNbt = NbtCompound()
             entry.writeToNbt(entryNbt)
@@ -52,9 +64,11 @@ class QuantumStorage : PersistentState() {
         }
         for (entry in portals) {
             val entryNbt = NbtCompound()
-
+            entry.writeToNbt(entryNbt)
+            portalsNbtList.add(entryNbt)
         }
         nbt.put(WORLDS_KEY, worldsNbtList)
+        nbt.put(PORTALS_KEY, portalsNbtList)
         return nbt
     }
 

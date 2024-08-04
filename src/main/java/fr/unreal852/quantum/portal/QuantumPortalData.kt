@@ -4,18 +4,19 @@ import fr.unreal852.quantum.utils.Extensions.getIdentifier
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.Identifier
 
-class QuantumPortalData {
 
-    lateinit var destinationId: Identifier
+class QuantumPortalData(destId: Identifier, portalBlockId: Identifier, portalIgniteItemId: Identifier, color: Int) {
+
+    var destinationId: Identifier = destId
         private set
 
-    lateinit var portalBlockId: Identifier
+    var portalBlockId: Identifier = portalBlockId
         private set
 
-    lateinit var portalIgniteItemId: Identifier
+    var portalIgniteItemId: Identifier = portalIgniteItemId
         private set
 
-    var portalColor: Int = 0
+    var portalColor: Int = color
         private set
 
     fun writeToNbt(nbt: NbtCompound) {
@@ -23,15 +24,6 @@ class QuantumPortalData {
         nbt.putString(BLOCK_KEY, portalBlockId.toString())
         nbt.putString(IGNITE_KEY, portalIgniteItemId.toString())
         nbt.putInt(COLOR_KEY, portalColor)
-    }
-
-    constructor()
-
-    constructor(destId: Identifier, portalBlockId: Identifier, portalIgniteItemId: Identifier, color: Int) {
-        this.destinationId = destId
-        this.portalBlockId = portalBlockId
-        this.portalIgniteItemId = portalIgniteItemId
-        this.portalColor = color
     }
 
     companion object {

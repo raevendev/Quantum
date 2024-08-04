@@ -5,11 +5,14 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.command.suggestion.BlocksSuggestionProvider
+import fr.unreal852.quantum.command.suggestion.ItemsSuggestionProvider
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
+import fr.unreal852.quantum.portal.QuantumPortalData
+import fr.unreal852.quantum.state.QuantumStorage
 import net.kyrptonaught.customportalapi.api.CustomPortalBuilder
 import net.minecraft.command.argument.DimensionArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
-import net.minecraft.item.Items
+import net.minecraft.registry.Registries
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 
@@ -23,13 +26,24 @@ class CreatePortalCommand : Command<ServerCommandSource> {
 
             val portalBlock = IdentifierArgumentType.getIdentifier(context, PORTAL_BLOCK_ARG)
             val destinationWorld = IdentifierArgumentType.getIdentifier(context, PORTAL_DESTINATION_ARG)
+            val portalItemId = IdentifierArgumentType.getIdentifier(context, PORTAL_ITEM_ARG)
+            val portalItem = Registries.ITEM.get(portalItemId)
+            val quantumPortalData = QuantumPortalData(destinationWorld, portalBlock, portalItemId, 1)
 
+            val quantumStorage = QuantumStorage.getQuantumState(context.source.server)
+
+            if (quantumStorage.portalExists(portalBlock)) {
+                Quantum.LOGGER.error("An error occurred while creating the portal.")
+                return 0
+            }
             CustomPortalBuilder.beginPortal()
                 .frameBlock(portalBlock)
-                .lightWithItem(Items.DIAMOND)
+                .lightWithItem(portalItem)
                 .destDimID(destinationWorld)
                 .tintColor(255, 0, 0)
                 .registerPortal()
+
+            quantumStorage.addPortalData(quantumPortalData)
 
         } catch (e: Exception) {
             Quantum.LOGGER.error("An error occurred while creating the world.", e)
@@ -42,6 +56,7 @@ class CreatePortalCommand : Command<ServerCommandSource> {
 
         private const val PORTAL_BLOCK_ARG = "portalFrameBlock"
         private const val PORTAL_DESTINATION_ARG = "destinationWorld"
+        private const val PORTAL_ITEM_ARG = "portalItem"
 
         fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             dispatcher.register(CommandManager.literal("qt")
@@ -52,10 +67,16 @@ class CreatePortalCommand : Command<ServerCommandSource> {
                             .suggests(BlocksSuggestionProvider())
                             .executes(CreatePortalCommand())
                             .then(
-                                CommandManager.argument(PORTAL_DESTINATION_ARG, DimensionArgumentType.dimension())
-                                    .suggests(WorldsDimensionSuggestionProvider())
+                                CommandManager.argument(PORTAL_ITEM_ARG, IdentifierArgumentType.identifier())
+                                    .suggests(ItemsSuggestionProvider())
                                     .executes(CreatePortalCommand())
+                                    .then(
+                                        CommandManager.argument(PORTAL_DESTINATION_ARG, DimensionArgumentType.dimension())
+                                            .suggests(WorldsDimensionSuggestionProvider())
+                                            .executes(CreatePortalCommand())
+                                    )
                             )
+
                     )
                 )
             )

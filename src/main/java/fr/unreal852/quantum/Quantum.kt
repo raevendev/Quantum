@@ -3,16 +3,18 @@ package fr.unreal852.quantum
 import fr.unreal852.quantum.callback.PlayerRespawnHandler
 import fr.unreal852.quantum.callback.PlayerUseSignHandler
 import fr.unreal852.quantum.command.CommandRegistration
+import fr.unreal852.quantum.state.QuantumStorage
 import fr.unreal852.quantum.utils.Extensions.setDimensionAndGenerator
 import fr.unreal852.quantum.world.QuantumWorld
 import fr.unreal852.quantum.world.QuantumWorldData
-import fr.unreal852.quantum.state.QuantumStorage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarted
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.loader.api.FabricLoader
+import net.kyrptonaught.customportalapi.api.CustomPortalBuilder
+import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
@@ -38,6 +40,7 @@ object Quantum : ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(ServerStarted { server: MinecraftServer ->
 
             loadWorlds(server)
+            loadPortals(server)
         })
 
         UseBlockCallback.EVENT.register(PlayerUseSignHandler())
@@ -86,6 +89,21 @@ object Quantum : ModInitializer {
         for (world in state.getWorlds()) {
             getOrCreateWorld(server, world, false)
             LOGGER.info("Found world '{}', loading it.", world.worldId)
+        }
+    }
+
+    private fun loadPortals(server: MinecraftServer) {
+        val state = QuantumStorage.getQuantumState(server)
+
+        for (portal in state.getPortals()) {
+            val itemPortal = Registries.ITEM.get(portal.portalIgniteItemId)
+            LOGGER.info("Found portal '{}', loading it.", portal.destinationId)
+            CustomPortalBuilder.beginPortal()
+                .frameBlock(portal.portalBlockId)
+                .lightWithItem(itemPortal)
+                .destDimID(portal.destinationId)
+                .tintColor(portal.portalColor)
+                .registerPortal()
         }
     }
 }
