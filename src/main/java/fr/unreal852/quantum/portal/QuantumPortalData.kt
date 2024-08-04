@@ -1,15 +1,10 @@
 package fr.unreal852.quantum.portal
 
 import fr.unreal852.quantum.utils.Extensions.getIdentifier
-import fr.unreal852.quantum.world.QuantumWorldData
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.Identifier
-import net.minecraft.world.Difficulty
-import xyz.nucleoid.fantasy.RuntimeWorldConfig
 
 class QuantumPortalData {
-
-    val isEnabled: Boolean = true
 
     lateinit var destinationId: Identifier
         private set
