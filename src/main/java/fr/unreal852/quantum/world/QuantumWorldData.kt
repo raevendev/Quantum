@@ -39,7 +39,7 @@ class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorl
             val difficulty = Difficulty.byId(nbt.getInt(DIFFICULTY_KEY))
             val shouldTick = nbt.getBoolean(SHOULD_TICK_KEY)
 
-            val quantumWorldData = QuantumWorldData(
+            return QuantumWorldData(
                 worldId,
                 dimensionId,
                 RuntimeWorldConfig()
@@ -47,7 +47,6 @@ class QuantumWorldData(worldId: Identifier, dimensionId: Identifier, runtimeWorl
                     .setDifficulty(difficulty)
                     .setShouldTickTime(shouldTick)
             )
-            return quantumWorldData
         }
     }
 }
