@@ -14,6 +14,9 @@ class BlocksSuggestionProvider : SuggestionProvider<ServerCommandSource> {
         for (block in Registries.BLOCK) {
             val blockState = block.defaultState
 
+            if(blockState.isOpaque)
+                continue
+
             if (block != Blocks.AIR) {
                 builder.suggest(Registries.BLOCK.getEntry(block).idAsString)
             }
