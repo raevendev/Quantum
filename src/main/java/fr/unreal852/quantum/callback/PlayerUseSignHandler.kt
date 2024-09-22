@@ -2,6 +2,7 @@
 
 import fr.unreal852.quantum.utils.Extensions.teleportToWorld
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.minecraft.block.HangingSignBlock
 import net.minecraft.block.SignBlock
 import net.minecraft.block.WallSignBlock
 import net.minecraft.block.entity.SignBlockEntity
@@ -24,7 +25,7 @@ class PlayerUseSignHandler : UseBlockCallback {
         val blockState = world.getBlockState(hitResult.blockPos)
         val block = blockState.block
 
-        if (block !is SignBlock && block !is WallSignBlock)
+        if (block !is SignBlock && block !is WallSignBlock && block !is HangingSignBlock)
             return ActionResult.PASS
 
         val signEntity = world.getBlockEntity(hitResult.blockPos)

@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
+import net.minecraft.block.HangingSignBlock
 import net.minecraft.block.SignBlock
 import net.minecraft.block.WallSignBlock
 import net.minecraft.block.entity.SignBlockEntity
@@ -47,7 +48,7 @@ class SetTeleportSignCommand : Command<ServerCommandSource> {
                 val hitResult = world.raycast(rayContext)
                 val blockState = world.getBlockState(hitResult.blockPos)
 
-                if (blockState.block !is SignBlock && blockState.block !is WallSignBlock) {
+                if (blockState.block !is SignBlock && blockState.block !is WallSignBlock && blockState.block !is HangingSignBlock) {
                     context.source.sendError(Text.translatable("quantum.text.cmd.sign.lookat"))
                     return 0
                 }
