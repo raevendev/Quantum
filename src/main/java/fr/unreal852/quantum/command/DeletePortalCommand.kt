@@ -28,7 +28,8 @@ class DeletePortalCommand : Command<ServerCommandSource> {
                 return 0
             }
 
-            quantumStorage.removePortal(portal)
+            if (quantumStorage.removePortal(portal))
+                context.source.sendMessage(Text.translatable("quantum.text.cmd.world.deleted"))
 
         } catch (e: Exception) {
             Quantum.LOGGER.error("An error occurred while deleting the portal.", e)
