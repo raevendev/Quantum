@@ -24,7 +24,7 @@ class DeletePortalCommand : Command<ServerCommandSource> {
             val portal = quantumStorage.getPortal { it.portalBlockId == portalBlockId }
 
             if (portal == null) {
-                context.source.sendMessage(Text.translatable("quantum.text.cmd.portal.notexists", portalBlockId.toString()))
+                context.source.sendError(Text.translatable("quantum.text.cmd.portal.notexists", portalBlockId.toString()))
                 return 0
             }
 
