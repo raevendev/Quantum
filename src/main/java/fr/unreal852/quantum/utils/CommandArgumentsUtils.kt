@@ -56,17 +56,19 @@ object CommandArgumentsUtils {
     fun getSeedArgument(context: CommandContext<ServerCommandSource>, argumentName: String, defaultValue: Long): Long {
         return try {
             val rawSeed = StringArgumentType.getString(context, argumentName)
-            var parsedSeed = ParseUtils.tryParseLong(rawSeed, 0)
+            val parsedSeed = ParseUtils.tryParseLong(rawSeed)
 
-            if (parsedSeed != 0L) // The seed was given in a long format we can return it
+            if (parsedSeed != null) // The seed was given in a long format we can return it
                 return parsedSeed
+
+            var hashedSeed = 0L
 
             // The seed was given in a string format, we have to hash it
             for (i in rawSeed.indices) {
-                parsedSeed = 31 * parsedSeed + rawSeed[i].code
+                hashedSeed = 31 * hashedSeed + rawSeed[i].code
             }
 
-            parsedSeed
+            hashedSeed
         } catch (e: IllegalArgumentException) {
             defaultValue
         }

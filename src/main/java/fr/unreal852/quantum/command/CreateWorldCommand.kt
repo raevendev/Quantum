@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import fr.unreal852.quantum.Quantum
-import fr.unreal852.quantum.QuantumManager
 import fr.unreal852.quantum.command.suggestion.DifficultySuggestionProvider
 import fr.unreal852.quantum.command.suggestion.WorldsDimensionSuggestionProvider
 import fr.unreal852.quantum.utils.CommandArgumentsUtils.getEnumArgument
@@ -37,7 +36,7 @@ class CreateWorldCommand : Command<ServerCommandSource> {
             val worldName = StringArgumentType.getString(context, WORLD_NAME_ARG).lowercase()
             val worldIdentifier = Identifier.of(Quantum.MOD_ID, worldName)
 
-            if (QuantumManager.worldExists(worldIdentifier)) {
+            if (Quantum.worldExists(worldIdentifier)) {
                 context.source.sendError(Text.translatable("quantum.text.cmd.world.exists", worldName))
                 return 0
             }
@@ -52,10 +51,11 @@ class CreateWorldCommand : Command<ServerCommandSource> {
                 .setDimensionType(serverWorld.dimensionEntry)
                 .setGenerator(serverWorld.chunkManager.chunkGenerator)
                 .setSeed(worldSeed)
+                .setShouldTickTime(true)
 
             val quantumWorldData = QuantumWorldData(worldIdentifier, dimensionIdentifier, worldConfig)
 
-            QuantumManager.getOrOpenPersistentWorld(server, quantumWorldData, true)
+            Quantum.getOrCreateWorld(server, quantumWorldData, true)
 
             context.source.sendMessage(Text.translatable("quantum.text.cmd.world.created", worldName))
         } catch (e: Exception) {

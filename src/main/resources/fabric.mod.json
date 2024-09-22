@@ -8,8 +8,8 @@
     "Unreal852"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://modrinth.com/mod/quantum",
+    "sources": "https://github.com/raevendev/Quantum"
   },
   "license": "MIT",
   "icon": "assets/quantum/icon.png",
