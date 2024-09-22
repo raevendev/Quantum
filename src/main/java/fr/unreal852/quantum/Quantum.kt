@@ -12,7 +12,6 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarted
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.fabricmc.loader.api.FabricLoader
 import net.kyrptonaught.customportalapi.api.CustomPortalBuilder
 import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
@@ -20,26 +19,21 @@ import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.nucleoid.fantasy.Fantasy
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
 object Quantum : ModInitializer {
 
     const val MOD_ID = "quantum"
     val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
-    val CONFIG_FOLDER: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
     private val WORLDS: MutableMap<Identifier, QuantumWorld> = ConcurrentHashMap()
 
     override fun onInitialize() {
-        // This code runs as soon as Minecraft is in a mod-load-ready state.
-        // However, some things (like resources) may still be uninitialized.
-        // Proceed with mild caution.
 
         CommandRegistration.registerCommands()
 
         ServerLifecycleEvents.SERVER_STARTED.register(ServerStarted { server: MinecraftServer ->
             loadWorlds(server)
-            // TODO: loadPortals(server)
+            loadPortals(server)
         })
 
         UseBlockCallback.EVENT.register(PlayerUseSignHandler())
@@ -83,6 +77,9 @@ object Quantum : ModInitializer {
     }
 
     private fun loadWorlds(server: MinecraftServer) {
+
+        WORLDS.clear() // This is important otherwise it can lead to a world not being loaded if the client close and reopen a world
+
         val state = QuantumStorage.getQuantumState(server)
 
         for (world in state.getWorlds()) {
