@@ -43,7 +43,7 @@ class CreatePortalCommand : Command<ServerCommandSource> {
                 .frameBlock(portalBlock)
                 .lightWithItem(portalItem)
                 .destDimID(destinationId)
-                .tintColor(255, 0, 0)
+                .tintColor(240, 142, 25)
                 .registerPortal()
 
             context.source.sendMessage(Text.translatable("quantum.text.cmd.portal.created"))
