@@ -35,17 +35,20 @@ class CreatePortalCommand : Command<ServerCommandSource> {
 
             val destinationId = IdentifierArgumentType.getIdentifier(context, PORTAL_DESTINATION_ARG)
             val portalItemId = IdentifierArgumentType.getIdentifier(context, PORTAL_ITEM_ARG)
-            val portalItem = Registries.ITEM.get(portalItemId)
-            val quantumPortalData = QuantumPortalData(destinationId, portalBlockId, portalItemId, 1) // TODO: color argument
 
-            CustomPortalBuilder.beginPortal()
-                .frameBlock(portalItemId)
+            val portalBlock = Registries.BLOCK.get(portalBlockId)
+            val portalItem = Registries.ITEM.get(portalItemId)
+
+            val portalLink = CustomPortalBuilder.beginPortal()
+                .frameBlock(portalBlock)
                 .lightWithItem(portalItem)
                 .destDimID(destinationId)
                 .tintColor(255, 0, 0)
                 .registerPortal()
 
-            //quantumStorage.addPortal(quantumPortalData)
+            context.source.sendMessage(Text.translatable("quantum.text.cmd.portal.created"))
+
+            quantumStorage.addPortal(QuantumPortalData(portalLink.dimID, portalLink.block, portalItemId, portalLink.colorID))
 
         } catch (e: Exception) {
             Quantum.LOGGER.error("An error occurred while creating the world.", e)
