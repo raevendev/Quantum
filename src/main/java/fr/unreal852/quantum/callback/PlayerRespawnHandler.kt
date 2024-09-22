@@ -13,7 +13,7 @@ class PlayerRespawnHandler : AfterRespawn {
 
     override fun afterRespawn(oldPlayer: ServerPlayerEntity, newPlayer: ServerPlayerEntity, alive: Boolean) {
 
-        if (newPlayer.spawnPointPosition != null) { // Ignore respawn if the player has a bed
+        if (oldPlayer.spawnPointPosition != null) { // Ignore respawn if the player has a bed
             return
         }
 
