@@ -13,6 +13,10 @@ class PlayerRespawnHandler : AfterRespawn {
 
     override fun afterRespawn(oldPlayer: ServerPlayerEntity, newPlayer: ServerPlayerEntity, alive: Boolean) {
 
+        if (newPlayer.spawnPointPosition != null) { // Ignore respawn if the player has a bed
+            return
+        }
+
         val worldState = QuantumWorldStorage.getWorldState(newPlayer.serverWorld)
 
         val playerPositionPacket = PlayerPositionLookS2CPacket(
